@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Go WASM File Processing</title>
+</head>
+<body>
+    <h1>WASM File Upload</h1>
+    <input type="file" id="fileInput" />
+    <button onclick="handleFile()">Process File</button>
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject)
+        .then((result) => {
+          go.run(result.instance);
+        });
+
+      function handleFile() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        if (file) {
+          processFile(file);
+        } else {
+          console.error('No file selected');
+        }
+      }
+    </script>
+</body>
+</html>
+

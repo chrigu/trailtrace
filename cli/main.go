@@ -2,16 +2,19 @@ package main
 
 import (
 	"fmt"
+	"gopro/gpmfParser"
 	"os"
-
 )
-
 
 func main() {
 	// Open MP4 file for reading
-	
 
-	file, err := os.Open("../GX010025.mp4")
+	if len(os.Args) < 2 {
+		fmt.Println("Error: No file specified")
+		return
+	}
+
+	file, err := os.Open(os.Args[1])
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -19,7 +22,6 @@ func main() {
 	defer file.Close()
 
 	// Extract metadata track from the MP4 file
-	ExtractTelemetryData(file)
-  // Test()
+	gpmfParser.ExtractTelemetryData(file)
+	// Test()
 }
-

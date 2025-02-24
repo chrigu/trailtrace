@@ -1,8 +1,8 @@
-package main
+package gpmfParser
 
 import (
 	"fmt"
-	"os"
+	"io"
 
 	"github.com/abema/go-mp4"
 )
@@ -12,17 +12,17 @@ const (
 )
 
 type TelemetryMetadata struct {
-  ChunkOffsets []uint32
-  ChunkSizes []uint32
-  SampleToChunks []mp4.StscEntry
-  TimeToSamples []mp4.SttsEntry
+	ChunkOffsets   []uint32
+	ChunkSizes     []uint32
+	SampleToChunks []mp4.StscEntry
+	TimeToSamples  []mp4.SttsEntry
 }
 
-func ExtractTelemetryData(file *os.File) {
-  var metadataTrack *mp4.BoxInfo
-  var err error
+func ExtractTelemetryData(file io.ReadSeeker) {
+	var metadataTrack *mp4.BoxInfo
+	var err error
 
-  telemetryMetadata := TelemetryMetadata{}
+	telemetryMetadata := TelemetryMetadata{}
 	// Extract metadata track from the MP4 file
 	metadataTrack, err = extractMetadataTrack(file)
 	if err != nil {
@@ -39,47 +39,48 @@ func ExtractTelemetryData(file *os.File) {
 	stcoBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMinf(), mp4.BoxTypeStbl(), mp4.BoxTypeStco()})
 	for _, stcoBox := range stcoBoxes {
 		stcoBox := stcoBox.Payload.(*mp4.Stco)
-    telemetryMetadata.ChunkOffsets = stcoBox.ChunkOffset
+		telemetryMetadata.ChunkOffsets = stcoBox.ChunkOffset
 	}
 
 	stszBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMinf(), mp4.BoxTypeStbl(), mp4.BoxTypeStsz()})
 	for _, stszBox := range stszBoxes {
 		stszBox := stszBox.Payload.(*mp4.Stsz)
-    telemetryMetadata.ChunkSizes = stszBox.EntrySize
+		telemetryMetadata.ChunkSizes = stszBox.EntrySize
 	}
 
 	// get Stsc
 	stscBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMinf(), mp4.BoxTypeStbl(), mp4.BoxTypeStsc()})
 	for _, stscBox := range stscBoxes {
 		stscBox := stscBox.Payload.(*mp4.Stsc)
-    telemetryMetadata.SampleToChunks = stscBox.Entries
+		telemetryMetadata.SampleToChunks = stscBox.Entries
 	}
 
 	// get Stts
 	sttsBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMinf(), mp4.BoxTypeStbl(), mp4.BoxTypeStts()})
 	for _, sttsBox := range sttsBoxes {
 		sttsBox := sttsBox.Payload.(*mp4.Stts)
-    telemetryMetadata.TimeToSamples = sttsBox.Entries
+		telemetryMetadata.TimeToSamples = sttsBox.Entries
 	}
 
 	// // Read mdat size
 	// mdatBoxes, err := mp4.ExtractBox(file, nil, mp4.BoxPath{mp4.BoxTypeMdat()})
 	// //error handling
 	// fmt.Println("Offset mdat", mdatBoxes[0].Offset, "Size mdat", mdatBoxes[0].Size)
-  // telemetryMetadata.Offset = mdatBoxes[0].Offset
+	// telemetryMetadata.Offset = mdatBoxes[0].Offset
 
-  fmt.Println("Telemetry Metadata", telemetryMetadata.ChunkOffsets[0])
+	fmt.Println("Telemetry Metadata", telemetryMetadata.ChunkOffsets[0])
 
-  data, _ := readRawData(file, &telemetryMetadata)
-  writeBinaryToFile("telemetry.bin", data)
+	data, _ := readRawData(file, &telemetryMetadata)
+	// writeBinaryToFile("telemetry.bin", data)
+
+	ParseGPMF(data)
 
 	if err != nil {
 		fmt.Println("Error reading MP4 structure:", err)
 	}
 }
 
-
-func extractMetadataTrack(file *os.File) (*mp4.BoxInfo, error) {
+func extractMetadataTrack(file io.ReadSeeker) (*mp4.BoxInfo, error) {
 	// Extract metadata track from the MP4 file
 	var metadataTrack *mp4.BoxInfo
 
@@ -111,30 +112,30 @@ func extractMetadataTrack(file *os.File) (*mp4.BoxInfo, error) {
 	return metadataTrack, nil
 }
 
-func readRawData(file *os.File, telemetryMetadata *TelemetryMetadata) ([]byte, error) {
-	// Calculate total buffer size needed
+func readRawData(file io.ReadSeeker, telemetryMetadata *TelemetryMetadata) ([]byte, error) {
 	var totalSize uint32
 	for _, chunkSize := range telemetryMetadata.ChunkSizes {
 		totalSize += chunkSize
 	}
+	buffer := make([]byte, totalSize)
 
-  fmt.Println("Total size", totalSize)
-
-  buffer := make([]byte, totalSize)
-
-  var bufferPos uint64 = 0
-
+	var bufferPos uint64 = 0
 	for idx, offset := range telemetryMetadata.ChunkOffsets {
-    chunkSize := uint64(telemetryMetadata.ChunkSizes[idx])
+		chunkSize := uint64(telemetryMetadata.ChunkSizes[idx])
 
-		n, err := file.ReadAt(buffer[bufferPos:bufferPos+chunkSize], int64(offset))
+		_, err := file.Seek(int64(offset), io.SeekStart)
+		if err != nil {
+			fmt.Printf("Error seeking at offset %d: %v\n", offset, err)
+			return nil, err
+		}
+
+		n, err := file.Read(buffer[bufferPos : bufferPos+chunkSize])
 		if err != nil {
 			fmt.Printf("Error reading at offset %d: %v\n", offset, err)
-			return nil, nil
+			return nil, err
 		}
 		fmt.Printf("Read %d bytes from offset %d\n", n, offset)
 		bufferPos += chunkSize
 	}
-
-  return buffer, nil
+	return buffer, nil
 }
