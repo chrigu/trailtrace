@@ -1,16 +1,33 @@
 package gpmfParser
 
 import (
+	"encoding/binary"
 	"fmt"
-	// "encoding/binary"
+	"math"
+
+	"github.com/fatih/color"
 )
 
+type KLV struct {
+	FourCC   string
+	DataType int
+	DataSize uint32
+	Repeat   uint32
+	Children []KLV
+}
+
+type GPS9 struct {
+	Latitude  int32
+	Longitude int32
+	Altitude  int32
+}
+
 func ParseGPMF(data []byte) {
-	fmt.Println("Hello from gpmf-parser")
 	var offset uint32 = 0
+	var klvs []KLV = make([]KLV, 0)
 
 	for {
-		newOffset := readKLV(data, offset)
+		newOffset := readKLV(data, offset, &klvs)
 
 		if newOffset <= offset { // Stops infinite loop when offset is not advancing
 			fmt.Println("Error: Offset did not advance, stopping.")
@@ -21,47 +38,76 @@ func ParseGPMF(data []byte) {
 		offset = newOffset
 
 		// if offset >= uint32(len(data)) { // Ensures we don't read beyond available data
-		if offset >= 5000 { // Ensures we don't read beyond available data
+		if offset >= 1000 { // Ensures we don't read beyond available data
+			PrintTree(klvs, "")
 			break
 		}
 	}
 }
 
-func readKLV(data []byte, offset uint32) uint32 {
+func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 	// Check if enough bytes exist before reading
 	if offset+8 > uint32(len(data)) {
 		fmt.Println("Error: Not enough data for KLV header")
 		return offset + 8
 	}
 
-	fourCC := string(data[offset : offset+4])
-	dataType := int(data[offset+4])
-	dataSize := uint32(data[offset+5])
-	repeat := uint32(data[offset+6])<<8 | uint32(data[offset+7])
+	klv := KLV{
+		FourCC:   string(data[offset : offset+4]),
+		DataType: int(data[offset+4]),
+		DataSize: uint32(data[offset+5]),
+		Repeat:   uint32(data[offset+6])<<8 | uint32(data[offset+7]),
+		Children: make([]KLV, 0),
+	}
+	*klvs = append(*klvs, klv)
 
 	// Ensure payload does not exceed data slice
-	if offset+8+dataSize*repeat > uint32(len(data)) {
+	if offset+8+klv.DataSize*klv.Repeat > uint32(len(data)) {
 		// fmt.Println("Error: Payload exceeds available data")
 		return offset + 8
 	}
 
-	payload := data[offset+8 : offset+8+dataSize*repeat]
-	totalSize := dataSize * repeat
+	payload := data[offset+8 : offset+8+klv.DataSize*klv.Repeat]
+	totalSize := klv.DataSize * klv.Repeat
 	padding := (4 - (totalSize % 4)) % 4
 
-	fmt.Println("FourCC:", fourCC, "DataType:", dataType, "DataSize:", dataSize, "Repeat:", repeat, "Padding:", padding)
+	fmt.Println("FourCC:", klv.FourCC, "DataType:", klv.DataType, "DataSize:", klv.DataSize, "Repeat:", klv.Repeat, "Padding:", padding)
 
+	switch klv.FourCC {
+	case "GPS9":
+		color.Green("GPS9 found")
+		data, err := parseDynamicStructure(payload, "lllllllSS") // todo get from gopro
+
+		if err != nil {
+			fmt.Println("Error parsing dynamic structure:", err)
+		}
+		fmt.Println(data)
+	case "ORIN":
+		color.Green("ORIN found")
+	default:
+		//fmt.Println("Unknown FourCC", klv.FourCC)
+	}
 	// Process nested KLV structures
 
-	switch dataType {
+	switch klv.DataType {
 	case 0:
 		fmt.Println("Processing nested KLV entries")
 		nestedOffset := uint32(0) + padding
 
 		// Process multiple nested KLVs inside the payload
 		for nestedOffset < uint32(len(payload)) {
-			nestedOffset = readKLV(payload, nestedOffset)
+			var nestedKLVs []KLV
+			nestedOffset = readKLV(payload, nestedOffset, &nestedKLVs)
+
+			if len(nestedKLVs) > 0 {
+				(*klvs)[len(*klvs)-1].Children = append((*klvs)[len(*klvs)-1].Children, nestedKLVs...)
+			}
 		}
+
+		if klv.FourCC == "STRM" {
+			fmt.Println("Stream KLV found")
+		}
+
 	case int('b'): // int8_t
 		fmt.Println("Type: int8_t")
 	case int('B'): // uint8_t
@@ -101,5 +147,61 @@ func readKLV(data []byte, offset uint32) uint32 {
 		fmt.Println("Unknown data type")
 	}
 
-	return offset + 8 + dataSize*repeat + padding
+	return offset + 8 + klv.DataSize*klv.Repeat + padding
+}
+
+// parseDynamicStructure dynamically parses a buffer based on the format string
+func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
+	fmt.Println("Parsing dynamic structure with format:", format)
+	offset := 0
+	totalSize := len(data)
+	values := []interface{}{} // Slice to store parsed values
+
+	for i, char := range format {
+		switch char {
+		case 'l': // 32-bit signed integer
+			if offset+4 > totalSize {
+				fmt.Printf("Error: Not enough data for int32 at position %d\n", i)
+				return nil, fmt.Errorf("Not enough data for int32 at position %d", i)
+			}
+			value := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
+			fmt.Printf("l[%d]: %d (int32)\n", i, value)
+			values = append(values, value)
+			offset += 4
+
+		case 'S': // 16-bit unsigned integer
+			if offset+2 > totalSize {
+				fmt.Printf("Error: Not enough data for uint16 at position %d\n", i)
+				return nil, fmt.Errorf("Not enough data for uint16 at position %d", i)
+			}
+			value := binary.BigEndian.Uint16(data[offset : offset+2])
+			fmt.Printf("S[%d]: %d (uint16)\n", i, value)
+			values = append(values, value)
+			offset += 2
+
+		case 'f': // 32-bit float
+			if offset+4 > totalSize {
+				fmt.Printf("Error: Not enough data for float32 at position %d\n", i)
+				return nil, fmt.Errorf("Not enough data for float32 at position %d", i)
+			}
+			value := math.Float32frombits(binary.BigEndian.Uint32(data[offset : offset+4]))
+			fmt.Printf("f[%d]: %f (float32)\n", i, value)
+			values = append(values, value)
+			offset += 4
+
+		default:
+			fmt.Printf("Unknown format character: %c\n", char)
+			return nil, fmt.Errorf("Unknown format character: %c", char)
+		}
+	}
+
+	// Calculate padding
+	padding := (4 - (offset % 4)) % 4
+	if padding > 0 && offset+int(padding) <= totalSize {
+		fmt.Printf("Padding bytes: %d\n", padding)
+		offset += int(padding)
+	}
+
+	fmt.Printf("Total bytes processed: %d\n", offset)
+	return values, nil
 }

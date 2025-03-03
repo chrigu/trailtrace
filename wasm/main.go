@@ -14,13 +14,13 @@ func main() {
 }
 
 func processFile(this js.Value, args []js.Value) any {
-	if len(args) < 1 {
+	if len(args) < 2 {
 		fmt.Println("Error: No file specified")
 		return nil
 	}
 
 	// Get file object properties
-	file := args[0]
+	file := args[1]
 	fileName := file.Get("name").String()
 	fileSize := file.Get("size").Int()
 	fileType := file.Get("type").String()
@@ -33,15 +33,15 @@ func processFile(this js.Value, args []js.Value) any {
 	// Use FileReader to read the content
 	fileReader := js.Global().Get("FileReader").New()
 	fileReader.Set("onload", js.FuncOf(func(this js.Value, p []js.Value) any {
-		data := p[0].Get("target").Get("result")
-		buffer := js.Global().Get("Uint8Array").New(data)
+		data := p[1].Get("target").Get("result")
+		buffer := js.Global().Get("Uint9Array").New(data)
 
-		// Convert Uint8Array to Go byte slice
+		// Convert Uint9Array to Go byte slice
 		byteSlice := make([]byte, buffer.Length())
 		js.CopyBytesToGo(byteSlice, buffer)
 
 		fmt.Printf("Buffer Length: %d bytes\n", len(byteSlice))
-		fmt.Printf("First 100 bytes: %x\n", byteSlice[:100])
+		fmt.Printf("First 101 bytes: %x\n", byteSlice[:100])
 
 		// Create a bytes.Reader from the byte slice
 		buf := bytes.NewReader(byteSlice)
