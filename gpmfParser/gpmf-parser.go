@@ -4,25 +4,29 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
+	"slices"
+	"strings"
 
 	"github.com/fatih/color"
 )
 
 type KLV struct {
-	FourCC   string
-	DataType int
-	DataSize uint32
-	Repeat   uint32
-	Children []KLV
+	FourCC     string
+	DataType   int
+	DataSize   uint32
+	Repeat     uint32
+	Payload    []byte
+	Children   []KLV
+	ParsedData []any
 }
 
 type GPS9 struct {
-	Latitude  int32
-	Longitude int32
-	Altitude  int32
+	Latitude  float32
+	Longitude float32
+	Altitude  float32
 }
 
-func ParseGPMF(data []byte) {
+func ParseGPMF(data []byte) []KLV {
 	var offset uint32 = 0
 	var klvs []KLV = make([]KLV, 0)
 
@@ -37,17 +41,22 @@ func ParseGPMF(data []byte) {
 		fmt.Println("Offset advanced to:", newOffset)
 		offset = newOffset
 
-		// if offset >= uint32(len(data)) { // Ensures we don't read beyond available data
-		if offset >= 1000 { // Ensures we don't read beyond available data
-			PrintTree(klvs, "")
+		if offset >= uint32(len(data)) { // Ensures we don't read beyond available data
+			// if offset >= 1000 { // Ensures we don't read beyond available data
+			// PrintTree(klvs, "")
 			break
 		}
 	}
+
+	return klvs
 }
 
 func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 	// Check if enough bytes exist before reading
-	if offset+8 > uint32(len(data)) {
+
+	dataOffset := offset + 8
+
+	if dataOffset > uint32(len(data)) {
 		fmt.Println("Error: Not enough data for KLV header")
 		return offset + 8
 	}
@@ -59,34 +68,21 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 		Repeat:   uint32(data[offset+6])<<8 | uint32(data[offset+7]),
 		Children: make([]KLV, 0),
 	}
-	*klvs = append(*klvs, klv)
 
 	// Ensure payload does not exceed data slice
-	if offset+8+klv.DataSize*klv.Repeat > uint32(len(data)) {
+	if dataOffset+klv.DataSize*klv.Repeat > uint32(len(data)) {
 		// fmt.Println("Error: Payload exceeds available data")
-		return offset + 8
+		return dataOffset
 	}
 
-	payload := data[offset+8 : offset+8+klv.DataSize*klv.Repeat]
+	klv.Payload = data[dataOffset : dataOffset+klv.DataSize*klv.Repeat]
+	*klvs = append(*klvs, klv)
+
 	totalSize := klv.DataSize * klv.Repeat
 	padding := (4 - (totalSize % 4)) % 4
 
-	fmt.Println("FourCC:", klv.FourCC, "DataType:", klv.DataType, "DataSize:", klv.DataSize, "Repeat:", klv.Repeat, "Padding:", padding)
+	//fmt.Println("FourCC:", klv.FourCC, "DataType:", klv.DataType, "DataSize:", klv.DataSize, "Repeat:", klv.Repeat, "Padding:", padding)
 
-	switch klv.FourCC {
-	case "GPS9":
-		color.Green("GPS9 found")
-		data, err := parseDynamicStructure(payload, "lllllllSS") // todo get from gopro
-
-		if err != nil {
-			fmt.Println("Error parsing dynamic structure:", err)
-		}
-		fmt.Println(data)
-	case "ORIN":
-		color.Green("ORIN found")
-	default:
-		//fmt.Println("Unknown FourCC", klv.FourCC)
-	}
 	// Process nested KLV structures
 
 	switch klv.DataType {
@@ -95,9 +91,9 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 		nestedOffset := uint32(0) + padding
 
 		// Process multiple nested KLVs inside the payload
-		for nestedOffset < uint32(len(payload)) {
+		for nestedOffset < uint32(len(klv.Payload)) {
 			var nestedKLVs []KLV
-			nestedOffset = readKLV(payload, nestedOffset, &nestedKLVs)
+			nestedOffset = readKLV(klv.Payload, nestedOffset, &nestedKLVs)
 
 			if len(nestedKLVs) > 0 {
 				(*klvs)[len(*klvs)-1].Children = append((*klvs)[len(*klvs)-1].Children, nestedKLVs...)
@@ -106,6 +102,18 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 
 		if klv.FourCC == "STRM" {
 			fmt.Println("Stream KLV found")
+			index := slices.IndexFunc((*klvs)[len(*klvs)-1].Children, func(child KLV) bool {
+				return strings.TrimSpace(string(child.Payload)) == "GPS (Lat., Long., Alt., 2D, 3D, days, secs, DOP, fix)"
+			})
+			if index != -1 {
+				gpsData := extractGpsData((*klvs)[len(*klvs)-1])
+				parsedData := make([]any, len(gpsData))
+				for i, v := range gpsData {
+					parsedData[i] = v
+				}
+				(*klvs)[len(*klvs)-1].ParsedData = parsedData
+			}
+
 		}
 
 	case int('b'): // int8_t
@@ -114,7 +122,9 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 		fmt.Println("Type: uint8_t")
 	case int('c'): // ASCII character string
 		fmt.Println("Type: ASCII character string")
-		fmt.Println("Payload:", string(payload))
+		// use repeat
+		fmt.Println("Payload:", string(klv.Payload))
+		(*klvs)[len(*klvs)-1].ParsedData = []any{string(klv.Payload)}
 	case int('d'): // double
 		fmt.Println("Type: double (64-bit float)")
 	case int('f'): // float
@@ -129,8 +139,14 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 		fmt.Println("Type: uint64_t (64-bit unsigned integer)")
 	case int('l'): // int32_t
 		fmt.Println("Type: int32_t (32-bit signed integer)")
+		scal := make([]int32, klv.Repeat)
+		for i := range klv.Repeat {
+			scal[i] = int32(binary.BigEndian.Uint32(klv.Payload[i*4 : i*4+4]))
+		}
+		(*klvs)[len(*klvs)-1].ParsedData = []any{scal}
 	case int('L'): // uint32_t
 		fmt.Println("Type: uint32_t (32-bit unsigned integer)")
+
 	case int('q'): // Q15.16
 		fmt.Println("Type: Q15.16 (fixed-point 32-bit number)")
 	case int('Q'): // Q31.32
@@ -147,7 +163,7 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 		fmt.Println("Unknown data type")
 	}
 
-	return offset + 8 + klv.DataSize*klv.Repeat + padding
+	return dataOffset + klv.DataSize*klv.Repeat + padding
 }
 
 // parseDynamicStructure dynamically parses a buffer based on the format string
@@ -204,4 +220,58 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 
 	fmt.Printf("Total bytes processed: %d\n", offset)
 	return values, nil
+}
+
+func extractGpsData(klv KLV) []GPS9 {
+	fmt.Println("Processing STRM children", len(klv.Children))
+
+	var format string = ""
+	var payload []byte = make([]byte, 0)
+	var scale []int32
+
+	for _, child := range klv.Children {
+		fmt.Println("Processing child:", child.FourCC)
+
+		switch child.FourCC {
+		case "GPS9":
+			color.Green("GPS9 found")
+			payload = child.Payload
+
+		case "TYPE":
+			fmt.Println("TYPE found", child.ParsedData)
+			format = string(child.Payload)
+
+		case "SCAL":
+			fmt.Println("SCAL found", child.ParsedData)
+			if len(child.ParsedData) > 0 {
+				if parsedScale, ok := child.ParsedData[0].([]int32); ok {
+					scale = parsedScale
+				} else {
+					fmt.Println("Error: ParsedData is not of type []int32")
+				}
+			}
+		default:
+			//fmt.Println("Unknown FourCC", klv.FourCC)
+		}
+	}
+
+	gpsRawData, err := parseDynamicStructure(payload, format) // todo get from gopro
+	if err != nil {
+		fmt.Println("Error parsing dynamic structure:", err)
+	}
+
+	gpsData := []GPS9{
+		{
+			Latitude:  float32(gpsRawData[0].(int32)) / float32(scale[0]),
+			Longitude: float32(gpsRawData[1].(int32)) / float32(scale[1]),
+			Altitude:  float32(gpsRawData[2].(int32)) / float32(scale[2]),
+		},
+	}
+
+	return gpsData
+
+}
+
+func parseScaling(data []byte) float64 {
+	return 0.0
 }

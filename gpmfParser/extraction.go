@@ -18,7 +18,7 @@ type TelemetryMetadata struct {
 	TimeToSamples  []mp4.SttsEntry
 }
 
-func ExtractTelemetryData(file io.ReadSeeker) {
+func ExtractTelemetryData(file io.ReadSeeker) []GPS9 {
 	var metadataTrack *mp4.BoxInfo
 	var err error
 
@@ -27,12 +27,12 @@ func ExtractTelemetryData(file io.ReadSeeker) {
 	metadataTrack, err = extractMetadataTrack(file)
 	if err != nil {
 		fmt.Println("Error extracting metadata track:", err)
-		return
+		return []GPS9{}
 	}
 
 	if metadataTrack == nil {
 		fmt.Println("No metadata track found")
-		return
+		return []GPS9{}
 	}
 	fmt.Println("metadata track", metadataTrack)
 
@@ -73,11 +73,18 @@ func ExtractTelemetryData(file io.ReadSeeker) {
 	data, _ := readRawData(file, &telemetryMetadata)
 	// writeBinaryToFile("telemetry.bin", data)
 
-	ParseGPMF(data)
+	// move elsewhere
+	klvs := ParseGPMF(data)
+	gpsData := extractGPS9Data(klvs)
+	for _, gps := range gpsData {
+		fmt.Println("GPS9 data:", gps)
+	}
 
 	if err != nil {
 		fmt.Println("Error reading MP4 structure:", err)
 	}
+
+	return gpsData
 }
 
 func extractMetadataTrack(file io.ReadSeeker) (*mp4.BoxInfo, error) {
