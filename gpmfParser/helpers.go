@@ -35,6 +35,7 @@ func extractGPS9Data(klvs []KLV) []GPS9 {
 				if gps, ok := data.(GPS9); ok {
 					gpsDataList = append(gpsDataList, gps)
 				} else {
+					fmt.Println("STRM data:", klv.ParsedData)
 					fmt.Println("Warning: ParsedData entry is not of type GPS9")
 				}
 			}

@@ -76,9 +76,10 @@ func ExtractTelemetryData(file io.ReadSeeker) []GPS9 {
 	// move elsewhere
 	klvs := ParseGPMF(data)
 	gpsData := extractGPS9Data(klvs)
-	for _, gps := range gpsData {
-		fmt.Println("GPS9 data:", gps)
-	}
+	fmt.Println("GPS9 data:", len(gpsData))
+	// for _, gps := range gpsData {
+	// 	fmt.Println("GPS9 data:", gps)
+	// }
 
 	if err != nil {
 		fmt.Println("Error reading MP4 structure:", err)

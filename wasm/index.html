@@ -15,16 +15,25 @@
           go.run(result.instance);
         });
 
-      function handleFile() {
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
-        if (file) {
-          let data = processFile(file);
-          console.log(data);
-        } else {
-          console.error('No file selected');
-        }
-      }
+        function handleFile() {
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
+
+    if (file) {
+      let gpsData = processFile(file);
+      console.log(gpsData);
+      gpsData.then((data) => {
+        console.log("GPS Data Received:", data);
+        data.forEach((point, index) => {
+          console.log(`Point ${index}: Lat ${point.latitude}, Lon ${point.longitude}, Alt ${point.altitude}`);
+        });
+      }).catch((err) => {
+        console.error("Error processing file:", err);
+      });
+    } else {
+      console.error("No file selected");
+    }
+  }
     </script>
 </body>
 </html>

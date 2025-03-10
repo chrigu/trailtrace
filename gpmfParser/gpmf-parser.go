@@ -116,27 +116,27 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 
 		}
 
-	case int('b'): // int8_t
-		fmt.Println("Type: int8_t")
-	case int('B'): // uint8_t
-		fmt.Println("Type: uint8_t")
+	// case int('b'): // int8_t
+	// 	fmt.Println("Type: int8_t")
+	// case int('B'): // uint8_t
+	// 	fmt.Println("Type: uint8_t")
 	case int('c'): // ASCII character string
 		fmt.Println("Type: ASCII character string")
 		// use repeat
 		fmt.Println("Payload:", string(klv.Payload))
 		(*klvs)[len(*klvs)-1].ParsedData = []any{string(klv.Payload)}
-	case int('d'): // double
-		fmt.Println("Type: double (64-bit float)")
-	case int('f'): // float
-		fmt.Println("Type: float (32-bit float)")
-	case int('F'): // FourCC
-		fmt.Println("Type: FourCC (32-bit character key)")
-	case int('G'): // UUID
-		fmt.Println("Type: UUID (128-bit identifier)")
-	case int('j'): // int64_t
-		fmt.Println("Type: int64_t (64-bit signed integer)")
-	case int('J'): // uint64_t
-		fmt.Println("Type: uint64_t (64-bit unsigned integer)")
+	// case int('d'): // double
+	// 	fmt.Println("Type: double (64-bit float)")
+	// case int('f'): // float
+	// 	fmt.Println("Type: float (32-bit float)")
+	// case int('F'): // FourCC
+	// 	fmt.Println("Type: FourCC (32-bit character key)")
+	// case int('G'): // UUID
+	// 	fmt.Println("Type: UUID (128-bit identifier)")
+	// case int('j'): // int64_t
+	// 	fmt.Println("Type: int64_t (64-bit signed integer)")
+	// case int('J'): // uint64_t
+	// 	fmt.Println("Type: uint64_t (64-bit unsigned integer)")
 	case int('l'): // int32_t
 		fmt.Println("Type: int32_t (32-bit signed integer)")
 		scal := make([]int32, klv.Repeat)
@@ -144,21 +144,21 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 			scal[i] = int32(binary.BigEndian.Uint32(klv.Payload[i*4 : i*4+4]))
 		}
 		(*klvs)[len(*klvs)-1].ParsedData = []any{scal}
-	case int('L'): // uint32_t
-		fmt.Println("Type: uint32_t (32-bit unsigned integer)")
+	// case int('L'): // uint32_t
+	// 	fmt.Println("Type: uint32_t (32-bit unsigned integer)")
 
-	case int('q'): // Q15.16
-		fmt.Println("Type: Q15.16 (fixed-point 32-bit number)")
-	case int('Q'): // Q31.32
-		fmt.Println("Type: Q31.32 (fixed-point 64-bit number)")
-	case int('s'): // int16_t
-		fmt.Println("Type: int16_t (16-bit signed integer)")
-	case int('S'): // uint16_t
-		fmt.Println("Type: uint16_t (16-bit unsigned integer)")
-	case int('U'): // UTC Date and Time string
-		fmt.Println("Type: UTC Date and Time string")
-	case int('?'): // Complex structure
-		fmt.Println("Type: Complex structure")
+	// case int('q'): // Q15.16
+	// 	fmt.Println("Type: Q15.16 (fixed-point 32-bit number)")
+	// case int('Q'): // Q31.32
+	// 	fmt.Println("Type: Q31.32 (fixed-point 64-bit number)")
+	// case int('s'): // int16_t
+	// 	fmt.Println("Type: int16_t (16-bit signed integer)")
+	// case int('S'): // uint16_t
+	// 	fmt.Println("Type: uint16_t (16-bit unsigned integer)")
+	// case int('U'): // UTC Date and Time string
+	// 	fmt.Println("Type: UTC Date and Time string")
+	// case int('?'): // Complex structure
+	// 	fmt.Println("Type: Complex structure")
 	default:
 		fmt.Println("Unknown data type")
 	}
