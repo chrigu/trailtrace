@@ -25,28 +25,28 @@ func PrintTree(klvs []KLV, prefix string) {
 	}
 }
 
-func extractGPS9Data(klvs []KLV) []GPS9 {
-	var gpsDataList []GPS9
+// func extractGPS9Data(klvs []KLV) []GPS9 {
+// 	var gpsDataList []GPS9
 
-	for _, klv := range klvs {
-		if klv.FourCC == "STRM" {
+// 	for _, klv := range klvs {
+// 		if klv.FourCC == "STRM" {
 
-			for _, data := range klv.ParsedData {
-				if gps, ok := data.(GPS9); ok {
-					gpsDataList = append(gpsDataList, gps)
-				} else {
-					fmt.Println("STRM data:", klv.ParsedData)
-					fmt.Println("Warning: ParsedData entry is not of type GPS9")
-				}
-			}
-		}
+// 			for _, data := range klv.ParsedData {
+// 				if gps, ok := data.(GPS9); ok {
+// 					gpsDataList = append(gpsDataList, gps)
+// 				} else {
+// 					fmt.Println("STRM data:", klv.ParsedData)
+// 					fmt.Println("Warning: ParsedData entry is not of type GPS9")
+// 				}
+// 			}
+// 		}
 
-		// Recursively check children
-		if len(klv.Children) > 0 {
-			childGPS9 := extractGPS9Data(klv.Children)
-			gpsDataList = append(gpsDataList, childGPS9...)
-		}
-	}
+// 		// Recursively check children
+// 		if len(klv.Children) > 0 {
+// 			childGPS9 := extractGPS9Data(klv.Children)
+// 			gpsDataList = append(gpsDataList, childGPS9...)
+// 		}
+// 	}
 
-	return gpsDataList
-}
+// 	return gpsDataList
+// }
