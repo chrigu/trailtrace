@@ -74,10 +74,10 @@ func ExtractTelemetryData(file io.ReadSeeker) []GPS9 {
 	// writeBinaryToFile("telemetry.bin", data)
 
 	// move elsewhere
-	klvs := ParseGPMF(data)
+	klvs := ParseGPMF(data, false)
 	fmt.Println("KLVs", len(klvs))
-	// gpsData := extractGPS9Data(klvs)
-	// fmt.Println("GPS9 data:", len(gpsData))
+	gpsData := extractGPS9Data(klvs)
+	fmt.Println("GPS9 data:", len(gpsData))
 	// for _, gps := range gpsData {
 	// 	fmt.Println("GPS9 data:", gps)
 	// }
@@ -86,7 +86,7 @@ func ExtractTelemetryData(file io.ReadSeeker) []GPS9 {
 		fmt.Println("Error reading MP4 structure:", err)
 	}
 
-	return nil
+	return gpsData
 }
 
 func extractMetadataTrack(file io.ReadSeeker) (*mp4.BoxInfo, error) {
@@ -138,12 +138,12 @@ func readRawData(file io.ReadSeeker, telemetryMetadata *TelemetryMetadata) ([]by
 			return nil, err
 		}
 
-		n, err := file.Read(buffer[bufferPos : bufferPos+chunkSize])
+		_, err = file.Read(buffer[bufferPos : bufferPos+chunkSize])
 		if err != nil {
 			fmt.Printf("Error reading at offset %d: %v\n", offset, err)
 			return nil, err
 		}
-		fmt.Printf("Read %d bytes from offset %d\n", n, offset)
+		//fmt.Printf("Read %d bytes from offset %d\n", n, offset)
 		bufferPos += chunkSize
 	}
 	return buffer, nil

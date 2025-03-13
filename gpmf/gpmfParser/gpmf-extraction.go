@@ -13,7 +13,7 @@ type KLV struct {
 	Children []KLV
 }
 
-func ParseGPMF(data []byte) []KLV {
+func ParseGPMF(data []byte, printTree bool) []KLV {
 	var offset uint32 = 0
 	var klvs []KLV = make([]KLV, 0)
 
@@ -25,11 +25,12 @@ func ParseGPMF(data []byte) []KLV {
 			break
 		}
 
-		fmt.Println("Offset advanced to:", newOffset)
 		offset = newOffset
 
 		if offset >= uint32(len(data)) { // Ensures we don't read beyond available data
-			PrintTree(klvs, "")
+			if printTree {
+				PrintTree(klvs, "")
+			}
 			break
 		}
 	}
@@ -72,7 +73,6 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 	// Process nested KLV structures
 
 	if klv.DataType == 0 {
-		fmt.Println("Processing nested KLV entries")
 		nestedOffset := uint32(0) + padding
 
 		// Process multiple nested KLVs inside the payload
