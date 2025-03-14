@@ -12,13 +12,20 @@ const (
 )
 
 type TelemetryMetadata struct {
+	CreationTime   int64
+	TimeScale      uint32
 	ChunkOffsets   []uint32
 	ChunkSizes     []uint32
 	SampleToChunks []mp4.StscEntry
 	TimeToSamples  []mp4.SttsEntry
 }
 
-func ExtractTelemetryData(file io.ReadSeeker) []GPS9 {
+type GPSSample struct {
+	GPS9
+	timeStamp int64
+}
+
+func ExtractTelemetryData(file io.ReadSeeker) []GPSSample {
 	var metadataTrack *mp4.BoxInfo
 	var err error
 
@@ -27,14 +34,18 @@ func ExtractTelemetryData(file io.ReadSeeker) []GPS9 {
 	metadataTrack, err = extractMetadataTrack(file)
 	if err != nil {
 		fmt.Println("Error extracting metadata track:", err)
-		return []GPS9{}
+		return []GPSSample{}
 	}
 
 	if metadataTrack == nil {
 		fmt.Println("No metadata track found")
-		return []GPS9{}
+		return []GPSSample{}
 	}
 	fmt.Println("metadata track", metadataTrack)
+
+	mdhdBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMdhd()})
+	telemetryMetadata.TimeScale = mdhdBoxes[0].Payload.(*mp4.Mdhd).Timescale
+	telemetryMetadata.CreationTime = getUnixTimestamp(mdhdBoxes[0].Payload.(*mp4.Mdhd).CreationTimeV0)
 
 	stcoBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMinf(), mp4.BoxTypeStbl(), mp4.BoxTypeStco()})
 	for _, stcoBox := range stcoBoxes {
@@ -62,22 +73,28 @@ func ExtractTelemetryData(file io.ReadSeeker) []GPS9 {
 		telemetryMetadata.TimeToSamples = sttsBox.Entries
 	}
 
-	// // Read mdat size
-	// mdatBoxes, err := mp4.ExtractBox(file, nil, mp4.BoxPath{mp4.BoxTypeMdat()})
-	// //error handling
-	// fmt.Println("Offset mdat", mdatBoxes[0].Offset, "Size mdat", mdatBoxes[0].Size)
-	// telemetryMetadata.Offset = mdatBoxes[0].Offset
+	// Read mdat size
+	mdatBoxes, err := mp4.ExtractBox(file, nil, mp4.BoxPath{mp4.BoxTypeMdat()})
+	//error handling
+	fmt.Println("Offset mdat", mdatBoxes[0].Offset, "Size mdat", mdatBoxes[0].Size)
 
-	fmt.Println("Telemetry Metadata", telemetryMetadata.ChunkOffsets[0])
+	fmt.Println("Telemetry Metadata", telemetryMetadata.TimeScale, telemetryMetadata.TimeToSamples)
 
+	some := 0
+	for _, entry := range telemetryMetadata.TimeToSamples {
+		some += int(entry.SampleDelta)
+	}
+	fmt.Println("Some", some)
 	data, _ := readRawData(file, &telemetryMetadata)
 	// writeBinaryToFile("telemetry.bin", data)
-
+	// return []GPSSample{}
 	// move elsewhere
 	klvs := ParseGPMF(data, false)
 	fmt.Println("KLVs", len(klvs))
 	gpsData := extractGPS9Data(klvs)
 	fmt.Println("GPS9 data:", len(gpsData))
+	gpsDataSamples := assignTimestampsToGps(gpsData, &telemetryMetadata)
+	fmt.Println("GPS data time:", gpsDataSamples[len(gpsDataSamples)-1].timeStamp-gpsDataSamples[0].timeStamp)
 	// for _, gps := range gpsData {
 	// 	fmt.Println("GPS9 data:", gps)
 	// }
@@ -86,7 +103,7 @@ func ExtractTelemetryData(file io.ReadSeeker) []GPS9 {
 		fmt.Println("Error reading MP4 structure:", err)
 	}
 
-	return gpsData
+	return gpsDataSamples
 }
 
 func extractMetadataTrack(file io.ReadSeeker) (*mp4.BoxInfo, error) {
@@ -147,4 +164,29 @@ func readRawData(file io.ReadSeeker, telemetryMetadata *TelemetryMetadata) ([]by
 		bufferPos += chunkSize
 	}
 	return buffer, nil
+}
+
+func getUnixTimestamp(creationTimeV0 uint32) int64 {
+	// MP4 Epoch starts at 1904-01-01, Unix Epoch starts at 1970-01-01
+	mp4EpochOffset := int64(2082844800)
+
+	// Convert to Unix timestamp
+	return int64(creationTimeV0) - mp4EpochOffset
+}
+
+func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata) []GPSSample {
+	var gpsSamples []GPSSample
+	var sampleIndex uint32 = 0
+	var sampleScaleTime uint32 = 0
+
+	for _, timeToSample := range telemetryMetadata.TimeToSamples {
+		for i := 0; i < int(timeToSample.SampleCount); i++ {
+			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime/telemetryMetadata.TimeScale)
+			gpsSamples = append(gpsSamples, GPSSample{GPS9: gpsData[sampleIndex], timeStamp: sampleTime})
+			sampleIndex++
+			sampleScaleTime += timeToSample.SampleDelta
+		}
+	}
+
+	return gpsSamples
 }
