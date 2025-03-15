@@ -6,8 +6,6 @@ import (
 	"math"
 	"slices"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
 type GPS9 struct {
@@ -109,7 +107,7 @@ func extractGpsData(klv KLV) []GPS9 {
 
 		switch child.FourCC {
 		case "GPS9":
-			color.Green("GPS9 found")
+			log("GPS9 found")
 			payload = child.Payload
 
 		case "TYPE":

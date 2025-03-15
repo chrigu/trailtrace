@@ -22,7 +22,7 @@ type TelemetryMetadata struct {
 
 type GPSSample struct {
 	GPS9
-	timeStamp int64
+	TimeStamp int64
 }
 
 func ExtractTelemetryData(file io.ReadSeeker) []GPSSample {
@@ -94,7 +94,7 @@ func ExtractTelemetryData(file io.ReadSeeker) []GPSSample {
 	gpsData := extractGPS9Data(klvs)
 	fmt.Println("GPS9 data:", len(gpsData))
 	gpsDataSamples := assignTimestampsToGps(gpsData, &telemetryMetadata)
-	fmt.Println("GPS data time:", gpsDataSamples[len(gpsDataSamples)-1].timeStamp-gpsDataSamples[0].timeStamp)
+
 	// for _, gps := range gpsData {
 	// 	fmt.Println("GPS9 data:", gps)
 	// }
@@ -171,7 +171,7 @@ func getUnixTimestamp(creationTimeV0 uint32) int64 {
 	mp4EpochOffset := int64(2082844800)
 
 	// Convert to Unix timestamp
-	return int64(creationTimeV0) - mp4EpochOffset
+	return (int64(creationTimeV0) - mp4EpochOffset) * 1000
 }
 
 func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata) []GPSSample {
@@ -181,8 +181,8 @@ func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata)
 
 	for _, timeToSample := range telemetryMetadata.TimeToSamples {
 		for i := 0; i < int(timeToSample.SampleCount); i++ {
-			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime/telemetryMetadata.TimeScale)
-			gpsSamples = append(gpsSamples, GPSSample{GPS9: gpsData[sampleIndex], timeStamp: sampleTime})
+			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
+			gpsSamples = append(gpsSamples, GPSSample{GPS9: gpsData[sampleIndex], TimeStamp: sampleTime})
 			sampleIndex++
 			sampleScaleTime += timeToSample.SampleDelta
 		}

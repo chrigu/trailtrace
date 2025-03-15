@@ -2,11 +2,17 @@
 import { ref, onMounted } from "vue";
 import { useStore, type GpsData } from "~/store";
 
-const { updateGpsData } = useStore();
+const store = useStore()
 
 const fileInput = ref(null);
+const videoElement = ref(null);
+const videoUrl = ref("");
+const currentTime = ref(0);
 let go;
 let wasmInstance;
+
+
+const formattedTime = computed(() => store.videoCurrentTime.toFixed(2));
 
 const loadWasmExec = async () => {
   return new Promise((resolve, reject) => {
@@ -34,6 +40,7 @@ onMounted(async () => {
 });
 
 const handleFile = async () => {
+  
   if (!fileInput.value || !fileInput.value.files.length) {
     console.error("No file selected");
     return;
@@ -41,10 +48,17 @@ const handleFile = async () => {
 
   const file = fileInput.value.files[0];
 
+  videoUrl.value = URL.createObjectURL(file);
+
+  if (file.type !== "video/mp4" && !file.name.endsWith(".mp4")) {
+    console.error("Selected file is not an MP4");
+    return;
+  }
+
   if (window.processFile) {
     try {
       const gpsData = await window.processFile(file) as GpsData[];
-      updateGpsData(gpsData);
+      store.updateGpsData(gpsData);
       // gpsData.forEach((point, index) => {
       //   console.log(`Point ${index}: Lat ${point.latitude}, Lon ${point.longitude}, Alt ${point.altitude}`);
       // });
@@ -55,6 +69,19 @@ const handleFile = async () => {
     console.error("WASM processFile function not available");
   }
 };
+
+const updateCurrentTime = () => {
+  if (videoElement.value) {
+    store.updateVideoCurrentTime(videoElement.value.currentTime);
+    currentTime.value = videoElement.value.currentTime;
+  }
+};
+
+onMounted(() => {
+  if (videoElement.value) {
+    videoElement.value.addEventListener("timeupdate", updateCurrentTime);
+  }
+});
 </script>
 
 <template>
@@ -63,4 +90,8 @@ const handleFile = async () => {
     <input type="file" ref="fileInput" />
     <button @click="handleFile">Process File</button>
   </div>
+  <video v-if="videoUrl" ref="videoElement" :src="videoUrl" controls width="600" @timeupdate="updateCurrentTime"></video>
+  <p v-if="videoUrl">Current Playback Time: {{ formattedTime }}</p>
+  <p v-if="videoUrl">Current GPS Data:<pre>{{ store.currentGpsData }}</pre></p>
 </template>
+

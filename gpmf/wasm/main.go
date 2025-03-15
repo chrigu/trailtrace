@@ -61,7 +61,7 @@ func processFile(this js.Value, args []js.Value) any {
 }
 
 // Converts []GPS9 to a JavaScript array of objects
-func convertGPSToJS(gpsData []gpmfParser.GPS9) js.Value {
+func convertGPSToJS(gpsData []gpmfParser.GPSSample) js.Value {
 	jsArray := js.Global().Get("Array").New(len(gpsData))
 	for i, coord := range gpsData {
 		// Create a JavaScript object for each GPS9 struct
@@ -69,6 +69,7 @@ func convertGPSToJS(gpsData []gpmfParser.GPS9) js.Value {
 		jsCoord.Set("latitude", coord.Latitude)
 		jsCoord.Set("longitude", coord.Longitude)
 		jsCoord.Set("altitude", coord.Altitude)
+		jsCoord.Set("timestamp", coord.TimeStamp)
 		jsArray.SetIndex(i, jsCoord)
 	}
 	return jsArray

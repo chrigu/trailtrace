@@ -6,4 +6,5 @@ package gpmfParser
 // Log is a no-op in WASM builds
 func log(v ...interface{}) {
 	// Do nothing (silenced logs)
+	// fmt.Print(v...)
 }

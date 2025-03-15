@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 100vh; width: 100vw">
+  <div style="height: 600px; width: 800px">
     <LMap
       ref="map"
       :zoom="zoom"
@@ -12,6 +12,7 @@
         layer-type="base"
         name="OpenStreetMap"
       />
+
       <!-- Draw polyline if there are at least two points -->
       <LPolyline
         v-if="store.gpsData.length > 1"
@@ -19,9 +20,22 @@
         color="blue"
         :weight="4"
       />
+
+      <!-- Display a marker for the current GPS position -->
+      <LMarker
+        v-if="currentGpsData"
+        :lat-lng="[currentGpsData.latitude, currentGpsData.longitude]"
+      >
+        <LPopup>
+          <p>Current Position</p>
+          <p>Lat: {{ currentGpsData.latitude.toFixed(5) }}</p>
+          <p>Lon: {{ currentGpsData.longitude.toFixed(5) }}</p>
+        </LPopup>
+      </LMarker>
     </LMap>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
@@ -37,4 +51,7 @@ const computedCenter = computed(() => store.center);
 const polylinePoints = computed(() =>
   store.gpsData.map((point) => [point.latitude, point.longitude])
 );
+
+// Track the current GPS data point
+const currentGpsData = computed(() => store.currentGpsData);
 </script>

@@ -1,8 +1,18 @@
 import { defineStore } from 'pinia'
 
+
+export interface GpsData {
+  latitude: number;
+  longitude: number;
+  altitude: number;
+  timestamp: number;
+}
+
+
 export const useStore = defineStore('metaData', {
   state: () => ({
     gpsData: [] as GpsData[],
+    videoCurrentTime: 0,
   }),
   
   getters: {
@@ -17,17 +27,49 @@ export const useStore = defineStore('metaData', {
         state.gpsData.reduce((sum, p) => sum + p.longitude, 0) / state.gpsData.length;
       return [avgLat, avgLng];
     },
+    currentGpsData(state) {
+      const starTime = state.gpsData[0]?.timestamp;
+      return findClosestObject(state.gpsData, state.videoCurrentTime, starTime);
+    },
   },
 
   actions: {
     updateGpsData(data: GpsData[]) {
       this.gpsData = data;
     },
+    updateVideoCurrentTime(time: number) {
+      this.videoCurrentTime = time;
+    }
   },
 });
 
-export interface GpsData {
-  latitude: number;
-  longitude: number;
-  altitude: number;
-}
+const findClosestObject = (arr: { timestamp: number }[], targetTimestamp: number, starTime: number) => {
+  if (arr.length === 0) return null;
+
+  let left = 0;
+  let right = arr.length - 1;
+
+  while (left < right) {
+    const mid = Math.floor((left + right) / 2);
+
+    if ((arr[mid].timestamp - starTime)/1000 === targetTimestamp) {
+      return arr[mid]; // Exact match
+    } else if ((arr[mid].timestamp - starTime)/1000  < targetTimestamp) {
+      left = mid + 1;
+    } else {
+      right = mid;
+    }
+  }
+
+  // After the loop, 'left' is the closest index or the one just after the target
+  if (left === 0) return arr[0]; // Target is before the first element
+  if (left >= arr.length) return arr[arr.length - 1]; // Target is after the last element
+
+  // Compare the two closest candidates
+  const prev = arr[left - 1];
+  const next = arr[left];
+
+  return Math.abs((prev.timestamp - starTime)/1000 - targetTimestamp) <= Math.abs((next.timestamp - starTime)/1000 - targetTimestamp)
+    ? prev
+    : next;
+};
