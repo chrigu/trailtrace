@@ -12,9 +12,19 @@
   "dependencies": {
     "@nuxtjs/leaflet": "1.2.6",
     "@pinia/nuxt": "0.10.1",
+    "@vueuse/core": "^13.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.482.0",
     "nuxt": "^3.16.0",
     "pinia": "^3.0.1",
+    "shadcn-nuxt": "1.0.3",
+    "tailwind-merge": "^3.0.2",
+    "tailwindcss-animate": "^1.0.7",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.13.2"
   }
 }

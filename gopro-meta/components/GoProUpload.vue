@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useStore, type GpsData } from "~/store";
+import { Input } from '@/components/ui/input'
 
 const store = useStore()
 
@@ -39,14 +40,14 @@ onMounted(async () => {
   }
 });
 
-const handleFile = async () => {
-  
-  if (!fileInput.value || !fileInput.value.files.length) {
+const handleFile = async (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  if (!input.files || input.files.length === 0) {
     console.error("No file selected");
     return;
   }
 
-  const file = fileInput.value.files[0];
+  const file = input.files[0];
 
   videoUrl.value = URL.createObjectURL(file);
 
@@ -59,9 +60,6 @@ const handleFile = async () => {
     try {
       const gpsData = await window.processFile(file) as GpsData[];
       store.updateGpsData(gpsData);
-      // gpsData.forEach((point, index) => {
-      //   console.log(`Point ${index}: Lat ${point.latitude}, Lon ${point.longitude}, Alt ${point.altitude}`);
-      // });
     } catch (err) {
       console.error("Error processing file:", err);
     }
@@ -86,9 +84,8 @@ onMounted(() => {
 
 <template>
   <div>
-    <h1>WASM File Upload</h1>
-    <input type="file" ref="fileInput" />
-    <button @click="handleFile">Process File</button>
+    <h1>GoPro File Upload</h1>
+    <Input type="file" @change="handleFile" accept="video/mp4" />
   </div>
   <video v-if="videoUrl" ref="videoElement" :src="videoUrl" controls width="600" @timeupdate="updateCurrentTime"></video>
   <p v-if="videoUrl">Current Playback Time: {{ formattedTime }}</p>

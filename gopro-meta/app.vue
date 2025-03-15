@@ -4,7 +4,7 @@
 
 <template>
   <div>
-    <NuxtRouteAnnouncer />
+    <h1>GoPro Meta</h1>
     <GoProUpload />
     <Map />
   </div>
