@@ -181,6 +181,11 @@ func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata)
 
 	for _, timeToSample := range telemetryMetadata.TimeToSamples {
 		for i := 0; i < int(timeToSample.SampleCount); i++ {
+
+			if sampleIndex >= uint32(len(gpsData)) {
+				break
+			}
+
 			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
 			gpsSamples = append(gpsSamples, GPSSample{GPS9: gpsData[sampleIndex], TimeStamp: sampleTime})
 			sampleIndex++
