@@ -41,7 +41,7 @@ func processFile(this js.Value, args []js.Value) any {
 			buf := bytes.NewReader(byteSlice)
 
 			// Extract GPS data
-			gpsData := gpmfParser.ExtractTelemetryData(buf)
+			gpsData := gpmfParser.ExtractTelemetryDataFromMp4(buf)
 
 			// Convert Go GPS data (slice of GPS9) to JavaScript array of objects
 			jsGPSData := convertGPSToJS(gpsData)

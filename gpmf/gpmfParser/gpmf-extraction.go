@@ -13,7 +13,7 @@ type KLV struct {
 	Children []KLV
 }
 
-func ParseGPMF(data []byte, printTree bool) []KLV {
+func ParseGPMF(data []byte) []KLV {
 	var offset uint32 = 0
 	var klvs []KLV = make([]KLV, 0)
 
@@ -28,9 +28,6 @@ func ParseGPMF(data []byte, printTree bool) []KLV {
 		offset = newOffset
 
 		if offset >= uint32(len(data)) { // Ensures we don't read beyond available data
-			if printTree {
-				PrintTree(klvs, "")
-			}
 			break
 		}
 	}
@@ -58,7 +55,7 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 
 	// Ensure payload does not exceed data slice
 	if dataOffset+klv.DataSize*klv.Repeat > uint32(len(data)) {
-		// fmt.Println("Error: Payload exceeds available data")
+		log("Error: Payload exceeds available data")
 		return dataOffset
 	}
 

@@ -25,7 +25,7 @@ type GPSSample struct {
 	TimeStamp int64
 }
 
-func ExtractTelemetryData(file io.ReadSeeker) []GPSSample {
+func ExtractTelemetryDataFromMp4(file io.ReadSeeker) []GPSSample {
 	var metadataTrack *mp4.BoxInfo
 	var err error
 
@@ -41,7 +41,6 @@ func ExtractTelemetryData(file io.ReadSeeker) []GPSSample {
 		fmt.Println("No metadata track found")
 		return []GPSSample{}
 	}
-	fmt.Println("metadata track", metadataTrack)
 
 	mdhdBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMdhd()})
 	telemetryMetadata.TimeScale = mdhdBoxes[0].Payload.(*mp4.Mdhd).Timescale
@@ -80,29 +79,23 @@ func ExtractTelemetryData(file io.ReadSeeker) []GPSSample {
 
 	fmt.Println("Telemetry Metadata", telemetryMetadata.TimeScale, telemetryMetadata.TimeToSamples)
 
-	some := 0
-	for _, entry := range telemetryMetadata.TimeToSamples {
-		some += int(entry.SampleDelta)
-	}
-	fmt.Println("Some", some)
 	data, _ := readRawData(file, &telemetryMetadata)
-	// writeBinaryToFile("telemetry.bin", data)
-	// return []GPSSample{}
-	// move elsewhere
-	klvs := ParseGPMF(data, false)
+
+	return ExtractTelemetryData(data, &telemetryMetadata, false)
+
+}
+
+func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, printTree bool) []GPSSample {
+	klvs := ParseGPMF(data)
+
+	if printTree {
+		PrintTree(klvs, "")
+	}
+
 	fmt.Println("KLVs", len(klvs))
 	gpsData := extractGPS9Data(klvs)
 	fmt.Println("GPS9 data:", len(gpsData))
-	gpsDataSamples := assignTimestampsToGps(gpsData, &telemetryMetadata)
-
-	// for _, gps := range gpsData {
-	// 	fmt.Println("GPS9 data:", gps)
-	// }
-
-	if err != nil {
-		fmt.Println("Error reading MP4 structure:", err)
-	}
-
+	gpsDataSamples := assignTimestampsToGps(gpsData, telemetryMetadata)
 	return gpsDataSamples
 }
 
@@ -160,7 +153,6 @@ func readRawData(file io.ReadSeeker, telemetryMetadata *TelemetryMetadata) ([]by
 			fmt.Printf("Error reading at offset %d: %v\n", offset, err)
 			return nil, err
 		}
-		//fmt.Printf("Read %d bytes from offset %d\n", n, offset)
 		bufferPos += chunkSize
 	}
 	return buffer, nil
