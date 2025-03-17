@@ -27,3 +27,8 @@ See `README.md` in the nuxt directory
 - Move GPMF Parser to own project
 - Tests
 - Refactoring
+
+## Ressources
+- https://github.com/gopro/gpmf-parser
+- https://www.trekview.org/blog/injecting-camm-gpmd-telemetry-videos-part-3-mp4-structure-telemetry-trak/
+- https://developer.apple.com/documentation/quicktime-file-format/sample-to-chunk_atom/sample-to-chunk_table

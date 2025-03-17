@@ -9,36 +9,8 @@ const fileInput = ref(null);
 const videoElement = ref(null);
 const videoUrl = ref("");
 const currentTime = ref(0);
-let go;
-let wasmInstance;
-
 
 const formattedTime = computed(() => store.videoCurrentTime.toFixed(2));
-
-const loadWasmExec = async () => {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "/wasm_exec.js"; // Load from public folder
-    script.onload = resolve;
-    script.onerror = reject;
-    document.body.appendChild(script);
-  });
-};
-
-// Load wasm_exec.js and WebAssembly
-onMounted(async () => {
-  try {
-    await loadWasmExec();
-    go = new Go();
-    const wasmResponse = await fetch("/main.wasm");
-    const wasmBytes = await wasmResponse.arrayBuffer();
-    const { instance } = await WebAssembly.instantiate(wasmBytes, go.importObject);
-    go.run(instance);
-    wasmInstance = instance;
-  } catch (error) {
-    console.error("Error loading WebAssembly:", error);
-  }
-});
 
 const handleFile = async (event: Event) => {
   const input = event.target as HTMLInputElement;
