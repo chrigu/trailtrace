@@ -6,6 +6,7 @@ export interface GpsData {
   longitude: number;
   altitude: number;
   timestamp: number;
+  videoUrl: string;
 }
 
 
@@ -13,6 +14,7 @@ export const useStore = defineStore('metaData', {
   state: () => ({
     gpsData: [] as GpsData[],
     videoCurrentTime: 0,
+    videoUrl: '',
   }),
   
   getters: {
@@ -34,12 +36,15 @@ export const useStore = defineStore('metaData', {
   },
 
   actions: {
-    updateGpsData(data: GpsData[]) {
+    setGpsData(data: GpsData[]) {
       this.gpsData = data;
     },
-    updateVideoCurrentTime(time: number) {
+    setVideoCurrentTime(time: number) {
       this.videoCurrentTime = time;
-    }
+    },
+    setVideoUrl(url: string) {
+      this.videoUrl = url;
+    },
   },
 });
 

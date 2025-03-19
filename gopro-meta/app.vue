@@ -36,6 +36,7 @@ onMounted(async () => {
   </section>
   <div>
     <GoProUpload />
+    <Video />
     <Map />
   </div>
 </template>
