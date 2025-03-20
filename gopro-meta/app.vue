@@ -31,12 +31,16 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section>
+  <section class="mb-8 p-4">
     <h1>TrackBack</h1>
   </section>
-  <div>
-    <GoProUpload />
-    <Video />
-    <Map />
-  </div>
+  <section class="mx-4 flex flex-row  gap-x-4">
+    <div>
+      <GoProUpload class="mb-4" />
+      <Video />
+    </div>
+    <div class="h-[600px] flex-1">
+      <Map />
+    </div>
+  </section>
 </template>

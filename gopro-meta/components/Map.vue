@@ -1,5 +1,5 @@
 <template>
-  <div v-if="store.gpsData.length > 0" style="height: 600px; width: 800px">
+  <div v-if="store.gpsData.length > 0" class="h-full w-full">
     <LMap
       ref="map"
       :zoom="zoom"

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { useStore, type GpsData } from "~/store";
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 const store = useStore()
 
@@ -40,8 +41,10 @@ const handleFile = async (event: Event) => {
 
 <template>
   <div>
-    <h1>GoPro File Upload</h1>
-    <Input type="file" @change="handleFile" accept="video/mp4" />
+    <div class="flex flex-row justify-between">
+      <Label for="videofile">GoPro file</Label>
+      <Input id="videofile" type="file" @change="handleFile" accept="video/mp4" />
+    </div>
   </div>
 </template>
 

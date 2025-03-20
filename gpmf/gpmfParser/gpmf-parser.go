@@ -14,12 +14,17 @@ type GPS9 struct {
 	Altitude  float32
 }
 
+type Gyroscope struct {
+	X float32
+	Y float32
+	Z float32
+}
+
 func extractGPS9Data(klvs []KLV) []GPS9 {
 	var gpsDataList []GPS9
 
 	for _, klv := range klvs {
 		if klv.FourCC == "STRM" {
-			log("Stream KLV found")
 			index := slices.IndexFunc(klv.Children, func(child KLV) bool {
 				return strings.TrimSpace(string(child.Payload)) == "GPS (Lat., Long., Alt., 2D, 3D, days, secs, DOP, fix)"
 			})
@@ -39,6 +44,31 @@ func extractGPS9Data(klvs []KLV) []GPS9 {
 	return gpsDataList
 }
 
+// refactor
+func extractGyroData(klvs []KLV) []GPS9 {
+	var gyroDataList []GPS9
+
+	for _, klv := range klvs {
+		if klv.FourCC == "STRM" {
+			index := slices.IndexFunc(klv.Children, func(child KLV) bool {
+				return strings.TrimSpace(string(child.Payload)) == "Gyroscope"
+			})
+			if index != -1 {
+				gpsData := extractGpsData(klv)
+				gyroDataList = append(gyroDataList, gpsData...)
+			}
+
+		}
+		// Recursively check children
+		if len(klv.Children) > 0 {
+			childGPS9 := extractGPS9Data(klv.Children)
+			gyroDataList = append(gyroDataList, childGPS9...)
+		}
+
+	}
+	return gyroDataList
+}
+
 // parseDynamicStructure dynamically parses a buffer based on the format string
 func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 	log("Parsing dynamic structure with format:", format)
@@ -54,7 +84,7 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 				return nil, fmt.Errorf("Not enough data for int32 at position %d", i)
 			}
 			value := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
-			log("l[%d]: %d (int32)\n", i, value)
+			// log("l[%d]: %d (int32)\n", i, value)
 			values = append(values, value)
 			offset += 4
 
@@ -64,7 +94,7 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 				return nil, fmt.Errorf("Not enough data for uint16 at position %d", i)
 			}
 			value := binary.BigEndian.Uint16(data[offset : offset+2])
-			log("S[%d]: %d (uint16)\n", i, value)
+			// log("S[%d]: %d (uint16)\n", i, value)
 			values = append(values, value)
 			offset += 2
 
@@ -74,7 +104,7 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 				return nil, fmt.Errorf("Not enough data for float32 at position %d", i)
 			}
 			value := math.Float32frombits(binary.BigEndian.Uint32(data[offset : offset+4]))
-			log("f[%d]: %f (float32)\n", i, value)
+			// log("f[%d]: %f (float32)\n", i, value)
 			values = append(values, value)
 			offset += 4
 
@@ -96,14 +126,63 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 }
 
 func extractGpsData(klv KLV) []GPS9 {
-	log("Processing STRM children", len(klv.Children))
+	// log("Processing STRM children", len(klv.Children))
 
 	var format string = ""
 	var payload []byte = make([]byte, 0)
 	var scale []int32
 
 	for _, child := range klv.Children {
-		log("Processing child:", child.FourCC)
+		// log("Processing child:", child.FourCC)
+
+		switch child.FourCC {
+		case "GPS9":
+			log("GPS9 found")
+			payload = child.Payload
+
+		case "TYPE":
+			log("TYPE found")
+			format = readPayload(child).(string)
+
+		case "SCAL":
+			log("SCAL found")
+			scal := readPayload(child).([]int32)
+			if len(scal) > 0 {
+				scale = scal
+			} else {
+				log("Error: ParsedData is not of type []int32")
+			}
+		default:
+			//log("Unknown FourCC", klv.FourCC)
+		}
+	}
+
+	gpsRawData, err := parseDynamicStructure(payload, format) // todo get from gopro
+	if err != nil {
+		log("Error parsing dynamic structure:", err)
+	}
+
+	gpsData := []GPS9{
+		{
+			Latitude:  float32(gpsRawData[0].(int32)) / float32(scale[0]),
+			Longitude: float32(gpsRawData[1].(int32)) / float32(scale[1]),
+			Altitude:  float32(gpsRawData[2].(int32)) / float32(scale[2]),
+		},
+	}
+
+	return gpsData
+
+}
+
+func extractGyroscopeData(klv KLV) []GPS9 {
+	// log("Processing STRM children", len(klv.Children))
+
+	var format string = ""
+	var payload []byte = make([]byte, 0)
+	var scale []int32
+
+	for _, child := range klv.Children {
+		// log("Processing child:", child.FourCC)
 
 		switch child.FourCC {
 		case "GPS9":
