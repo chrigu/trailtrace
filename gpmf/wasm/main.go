@@ -41,13 +41,13 @@ func processFile(this js.Value, args []js.Value) any {
 			buf := bytes.NewReader(byteSlice)
 
 			// Extract GPS data
-			gpsData := gpmfParser.ExtractTelemetryDataFromMp4(buf)
-
-			// Convert Go GPS data (slice of GPS9) to JavaScript array of objects
-			jsGPSData := convertGPSToJS(gpsData)
+			gpsData, gyroData := gpmfParser.ExtractTelemetryDataFromMp4(buf)
 
 			// Resolve the Promise with the GPS data
-			resolve.Invoke(jsGPSData)
+			resolve.Invoke(map[string]interface{}{
+				"gpsData":  convertGPSToJS(gpsData),
+				"gyroData": convertGyroToJS(gyroData),
+			})
 			return nil
 		}))
 
@@ -69,6 +69,20 @@ func convertGPSToJS(gpsData []gpmfParser.GPSSample) js.Value {
 		jsCoord.Set("latitude", coord.Latitude)
 		jsCoord.Set("longitude", coord.Longitude)
 		jsCoord.Set("altitude", coord.Altitude)
+		jsCoord.Set("timestamp", coord.TimeStamp)
+		jsArray.SetIndex(i, jsCoord)
+	}
+	return jsArray
+}
+
+func convertGyroToJS(gpsData []gpmfParser.GyroSample) js.Value {
+	jsArray := js.Global().Get("Array").New(len(gpsData))
+	for i, coord := range gpsData {
+		// Create a JavaScript object for each GPS9 struct
+		jsCoord := js.Global().Get("Object").New()
+		jsCoord.Set("x", coord.X)
+		jsCoord.Set("y", coord.Y)
+		jsCoord.Set("z", coord.Z)
 		jsCoord.Set("timestamp", coord.TimeStamp)
 		jsArray.SetIndex(i, jsCoord)
 	}

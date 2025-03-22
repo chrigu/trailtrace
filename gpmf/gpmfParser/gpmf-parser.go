@@ -45,8 +45,8 @@ func extractGPS9Data(klvs []KLV) []GPS9 {
 }
 
 // refactor
-func extractGyroData(klvs []KLV) []GPS9 {
-	var gyroDataList []GPS9
+func extractGyroData(klvs []KLV) []Gyroscope {
+	var gyroDataList []Gyroscope
 
 	for _, klv := range klvs {
 		if klv.FourCC == "STRM" {
@@ -54,15 +54,15 @@ func extractGyroData(klvs []KLV) []GPS9 {
 				return strings.TrimSpace(string(child.Payload)) == "Gyroscope"
 			})
 			if index != -1 {
-				gpsData := extractGpsData(klv)
-				gyroDataList = append(gyroDataList, gpsData...)
+				gyroData := extractGyroscopeData(klv)
+				gyroDataList = append(gyroDataList, gyroData)
 			}
 
 		}
 		// Recursively check children
 		if len(klv.Children) > 0 {
-			childGPS9 := extractGPS9Data(klv.Children)
-			gyroDataList = append(gyroDataList, childGPS9...)
+			childGyro := extractGyroData(klv.Children)
+			gyroDataList = append(gyroDataList, childGyro...)
 		}
 
 	}
@@ -128,6 +128,7 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 func extractGpsData(klv KLV) []GPS9 {
 	// log("Processing STRM children", len(klv.Children))
 
+	// todo: extract types dynamically
 	var format string = ""
 	var payload []byte = make([]byte, 0)
 	var scale []int32
@@ -174,28 +175,23 @@ func extractGpsData(klv KLV) []GPS9 {
 
 }
 
-func extractGyroscopeData(klv KLV) []GPS9 {
+func extractGyroscopeData(klv KLV) Gyroscope {
 	// log("Processing STRM children", len(klv.Children))
 
-	var format string = ""
-	var payload []byte = make([]byte, 0)
-	var scale []int32
+	var payload []int16
+	var scale []int16
 
 	for _, child := range klv.Children {
 		// log("Processing child:", child.FourCC)
 
 		switch child.FourCC {
-		case "GPS9":
-			log("GPS9 found")
-			payload = child.Payload
-
-		case "TYPE":
-			log("TYPE found")
-			format = readPayload(child).(string)
+		case "GYRO":
+			//log("GYRO found")
+			payload = readPayload(child).([]int16)
 
 		case "SCAL":
-			log("SCAL found")
-			scal := readPayload(child).([]int32)
+			//log("SCAL found")
+			scal := readPayload(child).([]int16)
 			if len(scal) > 0 {
 				scale = scal
 			} else {
@@ -206,20 +202,13 @@ func extractGyroscopeData(klv KLV) []GPS9 {
 		}
 	}
 
-	gpsRawData, err := parseDynamicStructure(payload, format) // todo get from gopro
-	if err != nil {
-		log("Error parsing dynamic structure:", err)
+	gyroData := Gyroscope{
+		X: float32(payload[2] / scale[0]),
+		Y: float32(payload[1] / scale[0]),
+		Z: float32(payload[0] / scale[0]),
 	}
 
-	gpsData := []GPS9{
-		{
-			Latitude:  float32(gpsRawData[0].(int32)) / float32(scale[0]),
-			Longitude: float32(gpsRawData[1].(int32)) / float32(scale[1]),
-			Altitude:  float32(gpsRawData[2].(int32)) / float32(scale[2]),
-		},
-	}
-
-	return gpsData
+	return gyroData
 
 }
 
@@ -231,7 +220,7 @@ func readPayload(klv KLV) any {
 	// case int('B'): // uint8_t
 	// 	log("Type: uint8_t")
 	case int('c'): // ASCII character string
-		log("Type: ASCII character string")
+		//log("Type: ASCII character string")
 		// use repeat
 		log("Payload:", string(klv.Payload))
 		return string(klv.Payload)
@@ -249,11 +238,12 @@ func readPayload(klv KLV) any {
 	// 	log("Type: uint64_t (64-bit unsigned integer)")
 	case int('l'): // int32_t
 		log("Type: int32_t (32-bit signed integer)")
-		scal := make([]int32, klv.Repeat)
-		for i := range klv.Repeat {
-			scal[i] = int32(binary.BigEndian.Uint32(klv.Payload[i*4 : i*4+4]))
+		size := klv.Repeat * klv.DataSize / 4
+		payload := make([]int32, size)
+		for i := range size {
+			payload[i] = int32(binary.BigEndian.Uint32(klv.Payload[i*4 : i*4+4]))
 		}
-		return scal
+		return payload
 		// (*klvs)[len(*klvs)-1].ParsedData = []any{scal}
 	// case int('L'): // uint32_t
 	// 	log("Type: uint32_t (32-bit unsigned integer)")
@@ -262,8 +252,14 @@ func readPayload(klv KLV) any {
 	// 	log("Type: Q15.16 (fixed-point 32-bit number)")
 	// case int('Q'): // Q31.32
 	// 	log("Type: Q31.32 (fixed-point 64-bit number)")
-	// case int('s'): // int16_t
-	// 	log("Type: int16_t (16-bit signed integer)")
+	case int('s'): // int16_t
+		//log("Type: int16_t (16-bit signed integer)")
+		size := klv.Repeat * klv.DataSize / 2
+		payload := make([]int16, size)
+		for i := range size {
+			payload[i] = int16(binary.BigEndian.Uint16(klv.Payload[i*2 : i*2+2]))
+		}
+		return payload
 	// case int('S'): // uint16_t
 	// 	log("Type: uint16_t (16-bit unsigned integer)")
 	// case int('U'): // UTC Date and Time string

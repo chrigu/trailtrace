@@ -20,12 +20,21 @@ type TelemetryMetadata struct {
 	TimeToSamples  []mp4.SttsEntry
 }
 
-type GPSSample struct {
-	GPS9
+type TimeSample struct {
 	TimeStamp int64
 }
 
-func ExtractTelemetryDataFromMp4(file io.ReadSeeker) []GPSSample {
+type GPSSample struct {
+	GPS9
+	TimeSample
+}
+
+type GyroSample struct {
+	Gyroscope
+	TimeSample
+}
+
+func ExtractTelemetryDataFromMp4(file io.ReadSeeker) ([]GPSSample, []GyroSample) {
 	var metadataTrack *mp4.BoxInfo
 	var err error
 
@@ -34,12 +43,12 @@ func ExtractTelemetryDataFromMp4(file io.ReadSeeker) []GPSSample {
 	metadataTrack, err = extractMetadataTrack(file)
 	if err != nil {
 		fmt.Println("Error extracting metadata track:", err)
-		return []GPSSample{}
+		return []GPSSample{}, []GyroSample{}
 	}
 
 	if metadataTrack == nil {
 		fmt.Println("No metadata track found")
-		return []GPSSample{}
+		return []GPSSample{}, []GyroSample{}
 	}
 
 	mdhdBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMdhd()})
@@ -85,7 +94,7 @@ func ExtractTelemetryDataFromMp4(file io.ReadSeeker) []GPSSample {
 
 }
 
-func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, printTree bool) []GPSSample {
+func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, printTree bool) ([]GPSSample, []GyroSample) {
 	klvs := ParseGPMF(data)
 
 	if printTree {
@@ -94,9 +103,11 @@ func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, pri
 
 	fmt.Println("KLVs", len(klvs))
 	gpsData := extractGPS9Data(klvs)
-	fmt.Println("GPS9 data:", len(gpsData))
+	gyroData := extractGyroData(klvs)
+	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData))
 	gpsDataSamples := assignTimestampsToGps(gpsData, telemetryMetadata)
-	return gpsDataSamples
+	gyroDataSamples := assignTimestampsToGyro(gyroData, telemetryMetadata)
+	return gpsDataSamples, gyroDataSamples
 }
 
 func extractMetadataTrack(file io.ReadSeeker) (*mp4.BoxInfo, error) {
@@ -179,11 +190,34 @@ func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata)
 			}
 
 			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
-			gpsSamples = append(gpsSamples, GPSSample{GPS9: gpsData[sampleIndex], TimeStamp: sampleTime})
+			gpsSamples = append(gpsSamples, GPSSample{GPS9: gpsData[sampleIndex], TimeSample: TimeSample{TimeStamp: sampleTime}})
 			sampleIndex++
 			sampleScaleTime += timeToSample.SampleDelta
 		}
 	}
 
 	return gpsSamples
+}
+
+// todo: refactor
+func assignTimestampsToGyro(gyroData []Gyroscope, telemetryMetadata *TelemetryMetadata) []GyroSample {
+	var gyroSamples []GyroSample
+	var sampleIndex uint32 = 0
+	var sampleScaleTime uint32 = 0
+
+	for _, timeToSample := range telemetryMetadata.TimeToSamples {
+		for i := 0; i < int(timeToSample.SampleCount); i++ {
+
+			if sampleIndex >= uint32(len(gyroData)) {
+				break
+			}
+
+			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
+			gyroSamples = append(gyroSamples, GyroSample{Gyroscope: gyroData[sampleIndex], TimeSample: TimeSample{TimeStamp: sampleTime}})
+			sampleIndex++
+			sampleScaleTime += timeToSample.SampleDelta
+		}
+	}
+
+	return gyroSamples
 }
