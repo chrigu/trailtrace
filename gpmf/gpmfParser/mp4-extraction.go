@@ -106,7 +106,7 @@ func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, pri
 	gyroData := extractGyroData(klvs)
 	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData))
 	gpsDataSamples := assignTimestampsToGps(gpsData, telemetryMetadata)
-	gyroDataSamples := assignTimestampsToGyro(gyroData, telemetryMetadata)
+	gyroDataSamples := assignTimestampsToGyroWithAverage(gyroData, telemetryMetadata, 250)
 	return gpsDataSamples, gyroDataSamples
 }
 
@@ -200,22 +200,59 @@ func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata)
 }
 
 // todo: refactor
-func assignTimestampsToGyro(gyroData []Gyroscope, telemetryMetadata *TelemetryMetadata) []GyroSample {
+func assignTimestampsToGyroWithAverage(gyroData [][]Gyroscope, telemetryMetadata *TelemetryMetadata, downsampleIntervalMs uint32) []GyroSample {
 	var gyroSamples []GyroSample
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
 
+	var accumulatedGyro Gyroscope
+	var accumulatedTime int64 = 0
+	var count uint32 = 0
+	var lastSampleTime int64 = -1
+
+	timescaleDownsampleFactor := float32(telemetryMetadata.TimeScale * downsampleIntervalMs / 1000)
+
 	for _, timeToSample := range telemetryMetadata.TimeToSamples {
-		for i := 0; i < int(timeToSample.SampleCount); i++ {
+		for range int(timeToSample.SampleCount) {
+
+			// sampleTimescaleTime := sampleScaleTime * 1000 / telemetryMetadata.TimeScale
 
 			if sampleIndex >= uint32(len(gyroData)) {
 				break
 			}
 
-			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
-			gyroSamples = append(gyroSamples, GyroSample{Gyroscope: gyroData[sampleIndex], TimeSample: TimeSample{TimeStamp: sampleTime}})
+			for j := range gyroData[sampleIndex] {
+				accumulatedTime += int64(sampleScaleTime)
+
+				// Accumulate gyro values and time
+				accumulatedGyro.X += gyroData[sampleIndex][j].X
+				accumulatedGyro.Y += gyroData[sampleIndex][j].Y
+				accumulatedGyro.Z += gyroData[sampleIndex][j].Z
+				count++
+
+				// Check if downsample interval is reached
+				//fmt.Println(j, sampleScaleTime, int64(sampleScaleTime)-lastSampleTime >= int64(timescaleDownsampleFactor), timeToSample.SampleDelta*uint32(j)/uint32(len(gyroData[sampleIndex])))
+				if lastSampleTime == -1 || int64(sampleScaleTime)-lastSampleTime >= int64(timescaleDownsampleFactor) {
+					// Calculate average
+					avgGyro := Gyroscope{
+						X: accumulatedGyro.X / float32(count),
+						Y: accumulatedGyro.Y / float32(count),
+						Z: accumulatedGyro.Z / float32(count),
+					}
+					avgTime := telemetryMetadata.CreationTime + 1000*(accumulatedTime/(int64(count)*int64(telemetryMetadata.TimeScale)))
+
+					gyroSamples = append(gyroSamples, GyroSample{Gyroscope: avgGyro, TimeSample: TimeSample{TimeStamp: avgTime}})
+
+					// Reset accumulators
+					accumulatedGyro = Gyroscope{}
+					lastSampleTime = int64(sampleScaleTime)
+					accumulatedTime = 0
+					count = 0
+				}
+
+				sampleScaleTime += timeToSample.SampleDelta / uint32(len(gyroData[sampleIndex]))
+			}
 			sampleIndex++
-			sampleScaleTime += timeToSample.SampleDelta
 		}
 	}
 

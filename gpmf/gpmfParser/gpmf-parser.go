@@ -45,8 +45,8 @@ func extractGPS9Data(klvs []KLV) []GPS9 {
 }
 
 // refactor
-func extractGyroData(klvs []KLV) []Gyroscope {
-	var gyroDataList []Gyroscope
+func extractGyroData(klvs []KLV) [][]Gyroscope {
+	var gyroDataList [][]Gyroscope
 
 	for _, klv := range klvs {
 		if klv.FourCC == "STRM" {
@@ -175,10 +175,10 @@ func extractGpsData(klv KLV) []GPS9 {
 
 }
 
-func extractGyroscopeData(klv KLV) Gyroscope {
+func extractGyroscopeData(klv KLV) []Gyroscope {
 	// log("Processing STRM children", len(klv.Children))
 
-	var payload []int16
+	var payload [][]int16
 	var scale []int16
 
 	for _, child := range klv.Children {
@@ -187,13 +187,13 @@ func extractGyroscopeData(klv KLV) Gyroscope {
 		switch child.FourCC {
 		case "GYRO":
 			//log("GYRO found")
-			payload = readPayload(child).([]int16)
+			payload = readPayload(child).([][]int16)
 
 		case "SCAL":
 			//log("SCAL found")
-			scal := readPayload(child).([]int16)
-			if len(scal) > 0 {
-				scale = scal
+			scal := readPayload(child).([][]int16)
+			if len(scal[0]) > 0 {
+				scale = scal[0]
 			} else {
 				log("Error: ParsedData is not of type []int32")
 			}
@@ -202,14 +202,16 @@ func extractGyroscopeData(klv KLV) Gyroscope {
 		}
 	}
 
-	gyroData := Gyroscope{
-		X: float32(payload[2] / scale[0]),
-		Y: float32(payload[1] / scale[0]),
-		Z: float32(payload[0] / scale[0]),
+	gyroData := make([]Gyroscope, len(payload))
+	for i := range payload {
+		gyroData[i] = Gyroscope{
+			X: float32(payload[i][0]) / float32(scale[0]),
+			Y: float32(payload[i][1]) / float32(scale[0]),
+			Z: float32(payload[i][2]) / float32(scale[0]),
+		}
 	}
 
 	return gyroData
-
 }
 
 func readPayload(klv KLV) any {
@@ -254,10 +256,14 @@ func readPayload(klv KLV) any {
 	// 	log("Type: Q31.32 (fixed-point 64-bit number)")
 	case int('s'): // int16_t
 		//log("Type: int16_t (16-bit signed integer)")
-		size := klv.Repeat * klv.DataSize / 2
-		payload := make([]int16, size)
-		for i := range size {
-			payload[i] = int16(binary.BigEndian.Uint16(klv.Payload[i*2 : i*2+2]))
+		payload := make([][]int16, klv.Repeat)
+		for i := range klv.Repeat {
+			dataPackets := make([]int16, klv.DataSize/2)
+			for j := range klv.DataSize / 2 {
+				offset := (i*klv.DataSize + j) * 2
+				dataPackets[j] = int16(binary.BigEndian.Uint16(klv.Payload[offset : offset+2]))
+			}
+			payload[i] = dataPackets
 		}
 		return payload
 	// case int('S'): // uint16_t

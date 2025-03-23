@@ -6,13 +6,20 @@ export interface GpsData {
   longitude: number;
   altitude: number;
   timestamp: number;
-  videoUrl: string;
+}
+
+export interface GyroData {
+  x: number;
+  y: number;
+  z: number;
+  timestamp: number;
 }
 
 
 export const useStore = defineStore('metaData', {
   state: () => ({
     gpsData: [] as GpsData[],
+    gyroData: [] as GyroData[],
     videoCurrentTime: 0,
     videoUrl: '',
   }),
@@ -33,11 +40,18 @@ export const useStore = defineStore('metaData', {
       const starTime = state.gpsData[0]?.timestamp;
       return findClosestObject(state.gpsData, state.videoCurrentTime, starTime);
     },
+    currentGyroData(state) {
+      const starTime = state.gyroData[0]?.timestamp;
+      return findClosestObject(state.gyroData, state.videoCurrentTime, starTime);
+    },
   },
 
   actions: {
     setGpsData(data: GpsData[]) {
       this.gpsData = data;
+    },
+    setGyroData(data: GyroData[]) {
+      this.gyroData = data;
     },
     setVideoCurrentTime(time: number) {
       this.videoCurrentTime = time;

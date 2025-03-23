@@ -29,6 +29,7 @@ const handleFile = async (event: Event) => {
       const metadata = await window.processFile(file) as {gpsData: GpsData[], gyroData: any[]};
       console.log("GPS data:", metadata);
       store.setGpsData(metadata.gpsData);
+      store.setGyroData(metadata.gyroData);
     } catch (err) {
       console.error("Error processing file:", err);
     }
