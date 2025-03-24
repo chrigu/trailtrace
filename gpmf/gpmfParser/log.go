@@ -6,6 +6,6 @@ package gpmfParser
 import "fmt"
 
 // Log prints messages in CLI builds but is disabled in WASM.
-func log(v ...interface{}) {
-	fmt.Println(v...)
+func log(format string, v ...interface{}) {
+	fmt.Printf(format+"\n", v...)
 }

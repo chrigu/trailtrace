@@ -260,8 +260,9 @@ func readPayload(klv KLV) any {
 		for i := range klv.Repeat {
 			dataPackets := make([]int16, klv.DataSize/2)
 			for j := range klv.DataSize / 2 {
-				offset := (i*klv.DataSize + j) * 2
+				offset := (i*klv.DataSize/2 + j) * 2
 				dataPackets[j] = int16(binary.BigEndian.Uint16(klv.Payload[offset : offset+2]))
+				fmt.Println(dataPackets[j], offset)
 			}
 			payload[i] = dataPackets
 		}
