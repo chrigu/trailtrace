@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useStore } from "@/store"; // Adjust the import path based on your project structure
+import { useStore } from "@/store";
 
 const zoom = ref(6);
 const store = useStore();

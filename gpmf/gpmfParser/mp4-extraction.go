@@ -200,7 +200,11 @@ func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata)
 }
 
 // todo: refactor
-func assignTimestampsToGyroWithAverage(gyroData [][]Gyroscope, telemetryMetadata *TelemetryMetadata, downsampleIntervalMs uint32) []GyroSample {
+func assignTimestampsToGyroWithAverage(
+	gyroData [][]Gyroscope,
+	telemetryMetadata *TelemetryMetadata,
+	downsampleIntervalMs uint32,
+) []GyroSample {
 	var gyroSamples []GyroSample
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
@@ -208,53 +212,69 @@ func assignTimestampsToGyroWithAverage(gyroData [][]Gyroscope, telemetryMetadata
 	var accumulatedGyro Gyroscope
 	var accumulatedTime int64 = 0
 	var count uint32 = 0
-	var lastSampleTime int64 = -1
+	var lastSampleScaleTime int64 = 0
 
-	timescaleDownsampleFactor := float32(telemetryMetadata.TimeScale * downsampleIntervalMs / 1000)
+	// Precompute factor to avoid repeated calculation
+	downsampleScaleThreshold := int64(telemetryMetadata.TimeScale * downsampleIntervalMs / 1000)
 
 	for _, timeToSample := range telemetryMetadata.TimeToSamples {
 		for range int(timeToSample.SampleCount) {
-
-			// sampleTimescaleTime := sampleScaleTime * 1000 / telemetryMetadata.TimeScale
-
 			if sampleIndex >= uint32(len(gyroData)) {
 				break
 			}
 
-			for j := range gyroData[sampleIndex] {
+			currentGyroSamples := gyroData[sampleIndex]
+			sampleCount := uint32(len(currentGyroSamples))
+
+			for _, gyro := range currentGyroSamples {
 				accumulatedTime += int64(sampleScaleTime)
 
-				// Accumulate gyro values and time
-				accumulatedGyro.X += gyroData[sampleIndex][j].X
-				accumulatedGyro.Y += gyroData[sampleIndex][j].Y
-				accumulatedGyro.Z += gyroData[sampleIndex][j].Z
+				// Accumulate gyro values
+				accumulatedGyro.X += gyro.X
+				accumulatedGyro.Y += gyro.Y
+				accumulatedGyro.Z += gyro.Z
 				count++
 
-				// Check if downsample interval is reached
-				//fmt.Println(j, sampleScaleTime, int64(sampleScaleTime)-lastSampleTime >= int64(timescaleDownsampleFactor), timeToSample.SampleDelta*uint32(j)/uint32(len(gyroData[sampleIndex])))
-				if lastSampleTime == -1 || int64(sampleScaleTime)-lastSampleTime >= int64(timescaleDownsampleFactor) {
-					// Calculate average
-					avgGyro := Gyroscope{
-						X: accumulatedGyro.X / float32(count),
-						Y: accumulatedGyro.Y / float32(count),
-						Z: accumulatedGyro.Z / float32(count),
-					}
-					avgTime := telemetryMetadata.CreationTime + 1000*(accumulatedTime/(int64(count)*int64(telemetryMetadata.TimeScale)))
+				// Check if enough time has passed to downsample
+				if int64(sampleScaleTime)-lastSampleScaleTime >= downsampleScaleThreshold {
+					avgGyro := averageGyro(accumulatedGyro, count)
+					avgTime := calculateAverageTime(telemetryMetadata.CreationTime, accumulatedTime, count, telemetryMetadata.TimeScale)
 
-					gyroSamples = append(gyroSamples, GyroSample{Gyroscope: avgGyro, TimeSample: TimeSample{TimeStamp: avgTime}})
+					gyroSamples = append(gyroSamples, GyroSample{
+						Gyroscope: avgGyro,
+						TimeSample: TimeSample{
+							TimeStamp: avgTime,
+						},
+					})
 
 					// Reset accumulators
 					accumulatedGyro = Gyroscope{}
-					lastSampleTime = int64(sampleScaleTime)
+					lastSampleScaleTime = int64(sampleScaleTime)
 					accumulatedTime = 0
 					count = 0
 				}
 
-				sampleScaleTime += timeToSample.SampleDelta / uint32(len(gyroData[sampleIndex]))
+				// Increment scaled time based on sample delta
+				sampleScaleTime += timeToSample.SampleDelta / sampleCount
 			}
 			sampleIndex++
 		}
 	}
 
 	return gyroSamples
+}
+
+// Helper: Compute average Gyroscope reading
+func averageGyro(accumulated Gyroscope, count uint32) Gyroscope {
+	return Gyroscope{
+		X: accumulated.X / float32(count),
+		Y: accumulated.Y / float32(count),
+		Z: accumulated.Z / float32(count),
+	}
+}
+
+// Helper: Compute average timestamp
+func calculateAverageTime(creationTime int64, accumulatedTime int64, count uint32, timeScale uint32) int64 {
+	averageScaleTime := accumulatedTime / int64(count)
+	return creationTime + 1000*(averageScaleTime/int64(timeScale))
 }
