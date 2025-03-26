@@ -20,53 +20,41 @@ type Gyroscope struct {
 	Z float32
 }
 
-func extractGPS9Data(klvs []KLV) []GPS9 {
-	var gpsDataList []GPS9
+// extractSensorData is a generic function to extract sensor data from KLVs
+func extractSensorData[T any](klvs []KLV, sensorType string, extractFunc func(KLV) []T) [][]T {
+	var dataList [][]T
 
 	for _, klv := range klvs {
 		if klv.FourCC == "STRM" {
 			index := slices.IndexFunc(klv.Children, func(child KLV) bool {
-				return strings.TrimSpace(string(child.Payload)) == "GPS (Lat., Long., Alt., 2D, 3D, days, secs, DOP, fix)"
+				return strings.TrimSpace(string(child.Payload)) == sensorType
 			})
 			if index != -1 {
-				gpsData := extractGpsData(klv)
-				gpsDataList = append(gpsDataList, gpsData...)
+				data := extractFunc(klv)
+				dataList = append(dataList, data)
 			}
-
 		}
 		// Recursively check children
 		if len(klv.Children) > 0 {
-			childGPS9 := extractGPS9Data(klv.Children)
-			gpsDataList = append(gpsDataList, childGPS9...)
+			childData := extractSensorData(klv.Children, sensorType, extractFunc)
+			dataList = append(dataList, childData...)
 		}
-
 	}
-	return gpsDataList
+	return dataList
 }
 
-// refactor
+func extractGPS9Data(klvs []KLV) [][]GPS9 {
+	return extractSensorData(klvs,
+		"GPS (Lat., Long., Alt., 2D, 3D, days, secs, DOP, fix)",
+		extractGpsData)
+}
+
 func extractGyroData(klvs []KLV) [][]Gyroscope {
-	var gyroDataList [][]Gyroscope
+	return extractSensorData(klvs, "Gyroscope", extractGyroscopeData)
+}
 
-	for _, klv := range klvs {
-		if klv.FourCC == "STRM" {
-			index := slices.IndexFunc(klv.Children, func(child KLV) bool {
-				return strings.TrimSpace(string(child.Payload)) == "Gyroscope"
-			})
-			if index != -1 {
-				gyroData := extractGyroscopeData(klv)
-				gyroDataList = append(gyroDataList, gyroData)
-			}
-
-		}
-		// Recursively check children
-		if len(klv.Children) > 0 {
-			childGyro := extractGyroData(klv.Children)
-			gyroDataList = append(gyroDataList, childGyro...)
-		}
-
-	}
-	return gyroDataList
+func extractAccometerData(klvs []KLV) [][]Gyroscope {
+	return extractSensorData(klvs, "Accelerometer", extractAccelerometerData)
 }
 
 // parseDynamicStructure dynamically parses a buffer based on the format string
@@ -131,7 +119,7 @@ func extractGpsData(klv KLV) []GPS9 {
 	// todo: extract types dynamically
 	var format string = ""
 	var payload []byte = make([]byte, 0)
-	var scale []int32
+	var scale [][]int32
 
 	for _, child := range klv.Children {
 		// log("Processing child:", child.FourCC)
@@ -147,7 +135,7 @@ func extractGpsData(klv KLV) []GPS9 {
 
 		case "SCAL":
 			log("SCAL found")
-			scal := readPayload(child).([]int32)
+			scal := readPayload(child).([][]int32)
 			if len(scal) > 0 {
 				scale = scal
 			} else {
@@ -158,21 +146,18 @@ func extractGpsData(klv KLV) []GPS9 {
 		}
 	}
 
-	gpsRawData, err := parseDynamicStructure(payload, format) // todo get from gopro
+	gpsRawData, err := parseDynamicStructure(payload, format) // todo get from gopro, honor repeat
 	if err != nil {
 		log("Error parsing dynamic structure:", err)
 	}
 
-	gpsData := []GPS9{
+	return []GPS9{
 		{
-			Latitude:  float32(gpsRawData[0].(int32)) / float32(scale[0]),
-			Longitude: float32(gpsRawData[1].(int32)) / float32(scale[1]),
-			Altitude:  float32(gpsRawData[2].(int32)) / float32(scale[2]),
+			Latitude:  float32(gpsRawData[0].(int32)) / float32(scale[0][0]),
+			Longitude: float32(gpsRawData[1].(int32)) / float32(scale[1][0]),
+			Altitude:  float32(gpsRawData[2].(int32)) / float32(scale[2][0]),
 		},
 	}
-
-	return gpsData
-
 }
 
 func extractGyroscopeData(klv KLV) []Gyroscope {
@@ -186,6 +171,45 @@ func extractGyroscopeData(klv KLV) []Gyroscope {
 
 		switch child.FourCC {
 		case "GYRO":
+			//log("GYRO found")
+			payload = readPayload(child).([][]int16)
+
+		case "SCAL":
+			//log("SCAL found")
+			scal := readPayload(child).([][]int16)
+			if len(scal[0]) > 0 {
+				scale = scal[0]
+			} else {
+				log("Error: ParsedData is not of type []int32")
+			}
+		default:
+			//log("Unknown FourCC", klv.FourCC)
+		}
+	}
+
+	gyroData := make([]Gyroscope, len(payload))
+	for i := range payload {
+		gyroData[i] = Gyroscope{
+			X: float32(payload[i][0]) / float32(scale[0]),
+			Y: float32(payload[i][1]) / float32(scale[0]),
+			Z: float32(payload[i][2]) / float32(scale[0]),
+		}
+	}
+
+	return gyroData
+}
+
+func extractAccelerometerData(klv KLV) []Gyroscope {
+	// log("Processing STRM children", len(klv.Children))
+
+	var payload [][]int16
+	var scale []int16
+
+	for _, child := range klv.Children {
+		// log("Processing child:", child.FourCC)
+
+		switch child.FourCC {
+		case "ACCL":
 			//log("GYRO found")
 			payload = readPayload(child).([][]int16)
 
@@ -239,11 +263,15 @@ func readPayload(klv KLV) any {
 	// case int('J'): // uint64_t
 	// 	log("Type: uint64_t (64-bit unsigned integer)")
 	case int('l'): // int32_t
-		log("Type: int32_t (32-bit signed integer)")
-		size := klv.Repeat * klv.DataSize / 4
-		payload := make([]int32, size)
-		for i := range size {
-			payload[i] = int32(binary.BigEndian.Uint32(klv.Payload[i*4 : i*4+4]))
+		//log("Type: int32_t (32-bit signed integer)")
+		payload := make([][]int32, klv.Repeat)
+		for i := range klv.Repeat {
+			dataPackets := make([]int32, klv.DataSize/4)
+			for j := range klv.DataSize / 4 {
+				offset := (i*klv.DataSize/4 + j) * 4
+				dataPackets[j] = int32(binary.BigEndian.Uint32(klv.Payload[offset : offset+4]))
+			}
+			payload[i] = dataPackets
 		}
 		return payload
 		// (*klvs)[len(*klvs)-1].ParsedData = []any{scal}
@@ -262,7 +290,6 @@ func readPayload(klv KLV) any {
 			for j := range klv.DataSize / 2 {
 				offset := (i*klv.DataSize/2 + j) * 2
 				dataPackets[j] = int16(binary.BigEndian.Uint16(klv.Payload[offset : offset+2]))
-				fmt.Println(dataPackets[j], offset)
 			}
 			payload[i] = dataPackets
 		}
