@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label'
 
 const store = useStore()
 
-const fileInput = ref(null);
 
 const handleFile = async (event: Event) => {
   const input = event.target as HTMLInputElement;

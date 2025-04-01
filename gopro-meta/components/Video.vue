@@ -27,6 +27,6 @@ onMounted(() => {
   <video v-if="store.videoUrl" ref="videoElement" :src="store.videoUrl" controls width="600" @timeupdate="updateCurrentTime"></video>
   <p v-if="store.videoUrl">Current Playback Time: {{ formattedTime }}</p>
   <p v-if="store.videoUrl">Current GPS Data:<pre>{{ store.currentGpsData }}</pre></p>
-  <p v-if="store.videoUrl">Current Gyro Data:<pre>{{ store.currentGyroData }}</pre></p>
+  <p v-if="store.videoUrl">Current Acceleration Data:<pre>{{ store.currentAccelerationData }}</pre></p>
 </template>
 
