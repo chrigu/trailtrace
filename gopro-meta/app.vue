@@ -41,7 +41,7 @@ onMounted(async () => {
     </div>
     <div class="h-[600px] flex-1">
       <Map />
-    <GyroVisualizer />
+    <AccelerationVisualizer />
     </div>
   </section>
 </template>

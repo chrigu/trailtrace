@@ -104,9 +104,14 @@ func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, pri
 	fmt.Println("KLVs", len(klvs))
 	gpsData := extractGPS9Data(klvs)
 	gyroData := extractGyroData(klvs)
-	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData))
-	gpsDataSamples := assignTimestampsToGps(gpsData, telemetryMetadata)
-	gyroDataSamples := assignTimestampsToGyroWithAverage(gyroData, telemetryMetadata, 250)
+	accData := extractAccometerData(klvs)
+	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData), "Acc data:", len(accData))
+	flattenedGpsData := make([]GPS9, 0)
+	for _, gpsSlice := range gpsData {
+		flattenedGpsData = append(flattenedGpsData, gpsSlice...)
+	}
+	gpsDataSamples := assignTimestampsToGps(flattenedGpsData, telemetryMetadata)
+	gyroDataSamples := assignTimestampsToGyroWithAverage(accData, telemetryMetadata, 250)
 	return gpsDataSamples, gyroDataSamples
 }
 
