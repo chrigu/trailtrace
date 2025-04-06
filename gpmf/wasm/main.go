@@ -41,12 +41,13 @@ func processFile(this js.Value, args []js.Value) any {
 			buf := bytes.NewReader(byteSlice)
 
 			// Extract GPS data
-			gpsData, gyroData := gpmfParser.ExtractTelemetryDataFromMp4(buf)
+			gpsData, gyroData, faceData := gpmfParser.ExtractTelemetryDataFromMp4(buf)
 
 			// Resolve the Promise with the GPS data
 			resolve.Invoke(map[string]interface{}{
 				"gpsData":  convertGPSToJS(gpsData),
 				"gyroData": convertGyroToJS(gyroData),
+				"faceData": convertFaceToJS(faceData),
 			})
 			return nil
 		}))
@@ -85,6 +86,24 @@ func convertGyroToJS(gpsData []gpmfParser.GyroSample) js.Value {
 		jsCoord.Set("z", coord.Z)
 		jsCoord.Set("timestamp", coord.TimeStamp)
 		jsArray.SetIndex(i, jsCoord)
+	}
+	return jsArray
+}
+
+func convertFaceToJS(faceData []gpmfParser.FaceSample) js.Value {
+	jsArray := js.Global().Get("Array").New(len(faceData))
+	for i, face := range faceData {
+		jsFace := js.Global().Get("Object").New()
+		jsFace.Set("confidence", face.Confidence)
+		jsFace.Set("id", face.ID)
+		jsFace.Set("x", face.X)
+		jsFace.Set("y", face.Y)
+		jsFace.Set("w", face.W)
+		jsFace.Set("h", face.H)
+		jsFace.Set("smile", face.Smile)
+		jsFace.Set("blink", face.Blink)
+		jsFace.Set("timestamp", face.TimeStamp)
+		jsArray.SetIndex(i, jsFace)
 	}
 	return jsArray
 }

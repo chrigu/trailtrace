@@ -15,11 +15,25 @@ export interface AccelerationData {
   timestamp: number;
 }
 
+export interface FaceData {
+  confidence: number;
+  id: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  smile: number;
+  blink: number;
+  timestamp: number;
+}
+
+
 
 export const useStore = defineStore('metaData', {
   state: () => ({
     gpsData: [] as GpsData[],
     accelerationData: [] as AccelerationData[],
+    faceData: [] as FaceData[],
     videoCurrentTime: 0,
     videoUrl: '',
   }),
@@ -36,6 +50,7 @@ export const useStore = defineStore('metaData', {
         state.gpsData.reduce((sum, p) => sum + p.longitude, 0) / state.gpsData.length;
       return [avgLat, avgLng];
     },
+    // todo: refactor
     currentGpsData(state) {
       const starTime = state.gpsData[0]?.timestamp;
       return findClosestObject(state.gpsData, state.videoCurrentTime, starTime);
@@ -43,6 +58,10 @@ export const useStore = defineStore('metaData', {
     currentAccelerationData(state) {
       const startTime = state.accelerationData[0]?.timestamp;
       return findClosestObject(state.accelerationData, state.videoCurrentTime, startTime);
+    },
+    currentFaceData(state) {
+      const startTime = state.faceData[0]?.timestamp;
+      return findClosestObject(state.faceData, state.videoCurrentTime, startTime);
     },
   },
 
@@ -52,6 +71,9 @@ export const useStore = defineStore('metaData', {
     },
     setGyroData(data: AccelerationData[]) {
       this.accelerationData = data;
+    },
+    setFaceData(data: FaceData[]) {
+      this.faceData = data;
     },
     setVideoCurrentTime(time: number) {
       this.videoCurrentTime = time;

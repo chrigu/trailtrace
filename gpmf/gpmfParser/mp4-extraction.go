@@ -3,6 +3,7 @@ package gpmfParser
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/abema/go-mp4"
 )
@@ -29,12 +30,18 @@ type GPSSample struct {
 	TimeSample
 }
 
+// todo: rename
 type GyroSample struct {
 	Gyroscope
 	TimeSample
 }
 
-func ExtractTelemetryDataFromMp4(file io.ReadSeeker) ([]GPSSample, []GyroSample) {
+type FaceSample struct {
+	Face
+	TimeSample
+}
+
+func ExtractTelemetryDataFromMp4(file io.ReadSeeker) ([]GPSSample, []GyroSample, []FaceSample) {
 	var metadataTrack *mp4.BoxInfo
 	var err error
 
@@ -43,12 +50,12 @@ func ExtractTelemetryDataFromMp4(file io.ReadSeeker) ([]GPSSample, []GyroSample)
 	metadataTrack, err = extractMetadataTrack(file)
 	if err != nil {
 		fmt.Println("Error extracting metadata track:", err)
-		return []GPSSample{}, []GyroSample{}
+		return []GPSSample{}, []GyroSample{}, []FaceSample{}
 	}
 
 	if metadataTrack == nil {
 		fmt.Println("No metadata track found")
-		return []GPSSample{}, []GyroSample{}
+		return []GPSSample{}, []GyroSample{}, []FaceSample{}
 	}
 
 	mdhdBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMdhd()})
@@ -94,7 +101,7 @@ func ExtractTelemetryDataFromMp4(file io.ReadSeeker) ([]GPSSample, []GyroSample)
 
 }
 
-func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, printTree bool) ([]GPSSample, []GyroSample) {
+func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, printTree bool) ([]GPSSample, []GyroSample, []FaceSample) {
 	klvs := ParseGPMF(data)
 
 	if printTree {
@@ -102,17 +109,21 @@ func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, pri
 	}
 
 	fmt.Println("KLVs", len(klvs))
-	gpsData := extractGPS9Data(klvs)
-	gyroData := extractGyroData(klvs)
-	accData := extractAccometerData(klvs)
-	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData), "Acc data:", len(accData))
+	gpsData := parseGPS9Data(klvs)
+	gyroData := parseGyroscopeData(klvs)
+	accData := parseAccelerometerData(klvs)
+	faceData := parsecFaceData(klvs)
+	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData), "Acc data:", len(accData), "Face data:", len(faceData))
 	flattenedGpsData := make([]GPS9, 0)
 	for _, gpsSlice := range gpsData {
 		flattenedGpsData = append(flattenedGpsData, gpsSlice...)
 	}
+
+	// todo: refactor
 	gpsDataSamples := assignTimestampsToGps(flattenedGpsData, telemetryMetadata)
 	gyroDataSamples := assignTimestampsToGyroWithAverage(accData, telemetryMetadata, 250)
-	return gpsDataSamples, gyroDataSamples
+	faceDataSamples := assignTimestampsToFace(faceData, telemetryMetadata)
+	return gpsDataSamples, gyroDataSamples, faceDataSamples
 }
 
 func extractMetadataTrack(file io.ReadSeeker) (*mp4.BoxInfo, error) {
@@ -133,7 +144,7 @@ func extractMetadataTrack(file io.ReadSeeker) (*mp4.BoxInfo, error) {
 		for _, hdlrBox := range hdlrBoxes {
 			hdlr := hdlrBox.Payload.(*mp4.Hdlr)
 
-			if string(hdlr.Name) == GoProMetaName {
+			if strings.TrimSpace(hdlr.Name) == GoProMetaName {
 				metadataTrack = trackBox
 				break
 			}
@@ -202,6 +213,30 @@ func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata)
 	}
 
 	return gpsSamples
+}
+
+// refactor with assignTimestampsToGps
+func assignTimestampsToFace(faceData [][]Face, telemetryMetadata *TelemetryMetadata) []FaceSample {
+	var faceSamples []FaceSample
+	var sampleIndex uint32 = 0
+	var sampleScaleTime uint32 = 0
+
+	for _, timeToSample := range telemetryMetadata.TimeToSamples {
+		for i := 0; i < int(timeToSample.SampleCount); i++ {
+			if sampleIndex >= uint32(len(faceData)) {
+				break
+			}
+
+			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
+			for _, face := range faceData[sampleIndex] {
+				faceSamples = append(faceSamples, FaceSample{Face: face, TimeSample: TimeSample{TimeStamp: sampleTime}})
+			}
+			sampleIndex++
+			sampleScaleTime += timeToSample.SampleDelta
+		}
+	}
+
+	return faceSamples
 }
 
 // todo: refactor
