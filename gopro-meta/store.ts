@@ -73,7 +73,7 @@ export const useStore = defineStore('metaData', {
       this.accelerationData = data;
     },
     setFaceData(data: FaceData[]) {
-      this.faceData = data;
+      this.faceData = data.filter(face => face.confidence > 0 && face.x > 0 && face.y > 0 && face.w > 0 && face.h > 0);
     },
     setVideoCurrentTime(time: number) {
       this.videoCurrentTime = time;
@@ -103,14 +103,30 @@ const findClosestObject = (arr: { timestamp: number }[], targetTimestamp: number
   }
 
   // After the loop, 'left' is the closest index or the one just after the target
-  if (left === 0) return arr[0]; // Target is before the first element
-  if (left >= arr.length) return arr[arr.length - 1]; // Target is after the last element
+  if (left === 0) {
+    const timeDiff = Math.abs((arr[0].timestamp - starTime)/1000 - targetTimestamp);
+    return timeDiff <= 0.5 ? arr[0] : null;
+  }
+  if (left >= arr.length) {
+    const timeDiff = Math.abs((arr[arr.length - 1].timestamp - starTime)/1000 - targetTimestamp);
+    return timeDiff <= 0.5 ? arr[arr.length - 1] : null;
+  }
 
   // Compare the two closest candidates
   const prev = arr[left - 1];
   const next = arr[left];
-
-  return Math.abs((prev.timestamp - starTime)/1000 - targetTimestamp) <= Math.abs((next.timestamp - starTime)/1000 - targetTimestamp)
-    ? prev
-    : next;
+  
+  const prevTimeDiff = Math.abs((prev.timestamp - starTime)/1000 - targetTimestamp);
+  const nextTimeDiff = Math.abs((next.timestamp - starTime)/1000 - targetTimestamp);
+  
+  // Return the closer sample only if it's within 0.5s window
+  if (prevTimeDiff <= 0.5 && nextTimeDiff <= 0.5) {
+    return prevTimeDiff <= nextTimeDiff ? prev : next;
+  } else if (prevTimeDiff <= 0.5) {
+    return prev;
+  } else if (nextTimeDiff <= 0.5) {
+    return next;
+  }
+  
+  return null; // No sample within ±0.5s window
 };

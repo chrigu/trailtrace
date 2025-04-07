@@ -1,5 +1,5 @@
 <template>
-  <div v-if="store.gpsData.length > 0" class="h-full w-full">
+  <div v-if="showMap" class="h-full w-full">
     <LMap
       ref="map"
       :zoom="zoom"
@@ -54,4 +54,6 @@ const polylinePoints = computed(() =>
 
 // Track the current GPS data point
 const currentGpsData = computed(() => store.currentGpsData);
+
+const showMap = computed(() => store.gpsData.length > 1 && currentGpsData.value.longitude !== 0 && currentGpsData.value.latitude !== 0);
 </script>
