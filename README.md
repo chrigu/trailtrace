@@ -27,6 +27,7 @@ See `README.md` in the nuxt directory
 - Move GPMF Parser to own project
 - Tests
 - Refactoring
+- Optimize performance https://goperf.dev/01-common-patterns/mem-prealloc/#why-preallocation-matters
 
 ## Ressources
 - https://github.com/gopro/gpmf-parser

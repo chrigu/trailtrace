@@ -66,7 +66,7 @@ onMounted(async () => {
       <AccelerationVisualizer />
     </div>
   </section>
-  <section class="mx-4 flex flex-row gap-x-4">
+  <section class="mx-4">
     <p v-if="store.videoUrl">Current Playback Time: {{ formattedTime }}</p>
     <p v-if="store.videoUrl">Current GPS Data:<pre>{{ store.currentGpsData }}</pre></p>
     <p v-if="store.videoUrl">Current Acceleration Data:<pre>{{ store.currentAccelerationData }}</pre></p>

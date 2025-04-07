@@ -13,8 +13,8 @@ const faceBoxStyle = computed(() => {
   
   return {
     position: 'absolute' as const,
-    left: `${100 - currentFaceData.value.x * 100}%`,
-    top: `${100 - currentFaceData.value.y * 100}%`,
+    left: `${currentFaceData.value.x * 100}%`,
+    top: `${currentFaceData.value.y * 100}%`,
     width: `${currentFaceData.value.w * 100}%`,
     height: `${currentFaceData.value.h * 100}%`,
     border: '2px solid red',
@@ -25,11 +25,24 @@ const faceBoxStyle = computed(() => {
 // Display face metrics
 const faceMetrics = computed(() => {
   if (!currentFaceData.value) return null;
+  let smile = "😶"
+  let blink = "😳"
+
+  if (currentFaceData.value.smile > 0.65) {
+    smile = "😊"
+  } else if (currentFaceData.value.smile > 0.35) {
+    smile = "😐"
+  }
+
+  if (currentFaceData.value.blink > 0.5) {
+    blink = "😵"
+  }
+
   
   return {
-    confidence: `${(currentFaceData.value.confidence * 100).toFixed(1)}%`,
-    smile: `${(currentFaceData.value.smile * 100).toFixed(1)}%`,
-    blink: `${(currentFaceData.value.blink * 100).toFixed(1)}%`,
+    confidence: currentFaceData.value.confidence,
+    smile: `${smile} ${currentFaceData.value.smile}`,
+    blink: `${blink} ${currentFaceData.value.blink}`,
   };
 });
 </script>
@@ -38,12 +51,12 @@ const faceMetrics = computed(() => {
   <div class="relative">
     <slot></slot>
     <div v-if="currentFaceData" :style="faceBoxStyle">
-      <!-- <div class="absolute -top-6 left-0 bg-black/75 text-white text-xs p-1 rounded">
+      <div class="absolute left-full top-0 ml-2 bg-black/75 text-white p-1 rounded">
         <div>ID: {{ currentFaceData.id }}</div>
         <div>Confidence: {{ faceMetrics?.confidence }}</div>
         <div>Smile: {{ faceMetrics?.smile }}</div>
         <div>Blink: {{ faceMetrics?.blink }}</div>
-      </div> -->
+      </div>
     </div>
   </div>
 </template> 
