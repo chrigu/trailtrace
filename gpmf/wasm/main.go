@@ -41,7 +41,7 @@ func processFile(this js.Value, args []js.Value) any {
 			buf := bytes.NewReader(byteSlice)
 
 			// Extract GPS data
-			gpsData, gyroData, faceData := gpmfParser.ExtractTelemetryDataFromMp4(buf)
+			gpsData, gyroData, faceData := gpmfParser.ExtractTelemetryData(buf, false)
 
 			// Resolve the Promise with the GPS data
 			resolve.Invoke(map[string]interface{}{

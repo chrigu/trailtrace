@@ -1,10 +1,10 @@
 //go:build js && wasm
 // +build js,wasm
 
-package gpmfParser
+package internal
 
 // Log is a no-op in WASM builds
-func log(v ...interface{}) {
+func Log(v ...interface{}) {
 	// Do nothing (silenced logs)
 	// fmt.Print(v...)
 }

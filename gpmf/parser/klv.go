@@ -1,7 +1,9 @@
-package gpmfParser
+package parser
 
 import (
 	"fmt"
+
+	"gopro/internal"
 )
 
 type KLV struct {
@@ -55,7 +57,7 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 
 	// Ensure payload does not exceed data slice
 	if dataOffset+klv.DataSize*klv.Repeat > uint32(len(data)) {
-		log("Error: Payload exceeds available data")
+		internal.Log("Error: Payload exceeds available data")
 		return dataOffset
 	}
 

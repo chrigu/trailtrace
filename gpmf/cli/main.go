@@ -22,6 +22,6 @@ func main() {
 	defer file.Close()
 
 	// Extract metadata track from the MP4 file
-	gpmfParser.ExtractTelemetryDataFromMp4(file)
+	gpmfParser.ExtractTelemetryData(file, false)
 	// Test()
 }

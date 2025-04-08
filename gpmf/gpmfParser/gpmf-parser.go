@@ -6,6 +6,9 @@ import (
 	"math"
 	"slices"
 	"strings"
+
+	"gopro/internal"
+	"gopro/parser"
 )
 
 type GPS9 struct {
@@ -33,12 +36,12 @@ type Face struct {
 }
 
 // extractSensorData is a generic function to extract sensor data from KLVs
-func extractSensorData[T any](klvs []KLV, sensorType string, extractFunc func(KLV) []T) [][]T {
+func extractSensorData[T any](klvs []parser.KLV, sensorType string, extractFunc func(parser.KLV) []T) [][]T {
 	var dataList [][]T
 
 	for _, klv := range klvs {
 		if klv.FourCC == "STRM" {
-			index := slices.IndexFunc(klv.Children, func(child KLV) bool {
+			index := slices.IndexFunc(klv.Children, func(child parser.KLV) bool {
 				return strings.TrimSpace(string(child.Payload)) == sensorType
 			})
 			if index != -1 {
@@ -55,32 +58,32 @@ func extractSensorData[T any](klvs []KLV, sensorType string, extractFunc func(KL
 	return dataList
 }
 
-func parseGPS9Data(klvs []KLV) [][]GPS9 {
+func parseGPS9Data(klvs []parser.KLV) [][]GPS9 {
 	return extractSensorData(klvs,
 		"GPS (Lat., Long., Alt., 2D, 3D, days, secs, DOP, fix)",
 		extractGpsData)
 }
 
-func parseGyroscopeData(klvs []KLV) [][]Gyroscope {
+func parseGyroscopeData(klvs []parser.KLV) [][]Gyroscope {
 	return extractSensorData(klvs, "Gyroscope", extractGyroscopeData)
 }
 
-func parseAccelerometerData(klvs []KLV) [][]Gyroscope {
+func parseAccelerometerData(klvs []parser.KLV) [][]Gyroscope {
 	return extractSensorData(klvs, "Accelerometer", extractAccelerometerData)
 }
 
-func parsecFaceData(klvs []KLV) [][]Face {
+func parsecFaceData(klvs []parser.KLV) [][]Face {
 	return extractSensorData(klvs, "Face Coordinates and details", extractcFaceData)
 }
 
 // parseDynamicStructure dynamically parses a buffer based on the format string
 func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
-	log("Parsing dynamic structure with format:", format)
+	internal.Log("Parsing dynamic structure with format:", format)
 	offset := 0
 	totalSize := len(data)
 
 	if totalSize == 0 {
-		log("Error: No data to parse")
+		internal.Log("Error: No data to parse")
 		return []interface{}{}, nil
 	}
 
@@ -90,7 +93,7 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 		switch char {
 		case 'B': // 8-bit unsigned integer
 			if offset > totalSize {
-				log("Error: Not enough data for int6 at position %d\n", i)
+				internal.Log("Error: Not enough data for int6 at position %d\n", i)
 				return nil, fmt.Errorf("Not enough data for int8 at position %d", i)
 			}
 			value := data[offset]
@@ -99,7 +102,7 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 			offset += 1
 		case 'l': // 32-bit signed integer
 			if offset+4 > totalSize {
-				log("Error: Not enough data for int32 at position %d\n", i)
+				internal.Log("Error: Not enough data for int32 at position %d\n", i)
 				return nil, fmt.Errorf("Not enough data for int32 at position %d", i)
 			}
 			value := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
@@ -109,7 +112,7 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 
 		case 'S': // 16-bit unsigned integer
 			if offset+2 > totalSize {
-				log("Error: Not enough data for uint16 at position %d\n", i)
+				internal.Log("Error: Not enough data for uint16 at position %d\n", i)
 				return nil, fmt.Errorf("Not enough data for uint16 at position %d", i)
 			}
 			value := binary.BigEndian.Uint16(data[offset : offset+2])
@@ -119,7 +122,7 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 
 		case 'f': // 32-bit float
 			if offset+4 > totalSize {
-				log("Error: Not enough data for float32 at position %d\n", i)
+				internal.Log("Error: Not enough data for float32 at position %d\n", i)
 				return nil, fmt.Errorf("Not enough data for float32 at position %d", i)
 			}
 			value := math.Float32frombits(binary.BigEndian.Uint32(data[offset : offset+4]))
@@ -128,7 +131,7 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 			offset += 4
 
 		default:
-			log("Unknown format character: %c\n", char)
+			internal.Log("Unknown format character: %c\n", char)
 			return nil, fmt.Errorf("Unknown format character: %c", char)
 		}
 	}
@@ -136,15 +139,15 @@ func parseDynamicStructure(data []byte, format string) ([]interface{}, error) {
 	// Calculate padding
 	padding := (4 - (offset % 4)) % 4
 	if padding > 0 && offset+int(padding) <= totalSize {
-		log("Padding bytes: %d\n", padding)
+		internal.Log("Padding bytes: %d\n", padding)
 		offset += int(padding)
 	}
 
-	log("Total bytes processed: %d\n", offset)
+	internal.Log("Total bytes processed: %d\n", offset)
 	return values, nil
 }
 
-func extractGpsData(klv KLV) []GPS9 {
+func extractGpsData(klv parser.KLV) []GPS9 {
 	// log("Processing STRM children", len(klv.Children))
 
 	// todo: extract types dynamically
@@ -157,20 +160,20 @@ func extractGpsData(klv KLV) []GPS9 {
 
 		switch child.FourCC {
 		case "GPS9":
-			log("GPS9 found")
+			internal.Log("GPS9 found")
 			payload = child.Payload
 
 		case "TYPE":
-			log("TYPE found")
+			internal.Log("TYPE found")
 			format = readPayload(child).(string)
 
 		case "SCAL":
-			log("SCAL found")
+			internal.Log("SCAL found")
 			scal := readPayload(child).([][]int32)
 			if len(scal) > 0 {
 				scale = scal
 			} else {
-				log("Error: ParsedData is not of type []int32")
+				internal.Log("Error: ParsedData is not of type []int32")
 			}
 		default:
 			//log("Unknown FourCC", klv.FourCC)
@@ -179,7 +182,7 @@ func extractGpsData(klv KLV) []GPS9 {
 
 	gpsRawData, err := parseDynamicStructure(payload, format) // todo get from gopro, honor repeat
 	if err != nil {
-		log("Error parsing dynamic structure:", err)
+		internal.Log("Error parsing dynamic structure:", err)
 	}
 
 	return []GPS9{
@@ -191,7 +194,7 @@ func extractGpsData(klv KLV) []GPS9 {
 	}
 }
 
-func extractGyroscopeData(klv KLV) []Gyroscope {
+func extractGyroscopeData(klv parser.KLV) []Gyroscope {
 	// log("Processing STRM children", len(klv.Children))
 
 	var payload [][]int16
@@ -211,7 +214,7 @@ func extractGyroscopeData(klv KLV) []Gyroscope {
 			if len(scal[0]) > 0 {
 				scale = scal[0]
 			} else {
-				log("Error: ParsedData is not of type []int32")
+				internal.Log("Error: ParsedData is not of type []int32")
 			}
 		default:
 			//log("Unknown FourCC", klv.FourCC)
@@ -230,7 +233,7 @@ func extractGyroscopeData(klv KLV) []Gyroscope {
 	return gyroData
 }
 
-func extractAccelerometerData(klv KLV) []Gyroscope {
+func extractAccelerometerData(klv parser.KLV) []Gyroscope {
 	// log("Processing STRM children", len(klv.Children))
 
 	var payload [][]int16
@@ -250,7 +253,7 @@ func extractAccelerometerData(klv KLV) []Gyroscope {
 			if len(scal[0]) > 0 {
 				scale = scal[0]
 			} else {
-				log("Error: ParsedData is not of type []int32")
+				internal.Log("Error: ParsedData is not of type []int32")
 			}
 		default:
 			//log("Unknown FourCC", klv.FourCC)
@@ -270,7 +273,7 @@ func extractAccelerometerData(klv KLV) []Gyroscope {
 }
 
 // todo: handle tick tock data
-func extractcFaceData(klv KLV) []Face {
+func extractcFaceData(klv parser.KLV) []Face {
 	// struct ver,confidence %,ID,x,y,w,h,smile %, blink %
 	// BBSSSSSBB
 
@@ -286,22 +289,22 @@ func extractcFaceData(klv KLV) []Face {
 		// log("Processing child:", child.FourCC)
 		switch child.FourCC {
 		case "FACE":
-			log("FACE: found")
+			internal.Log("FACE: found")
 			payloads = append(payloads, child.Payload)
 
 		case "TYPE":
-			log("FACE: TYPE found")
+			internal.Log("FACE: TYPE found")
 			format = readPayload(child).(string)
 
 		case "SCAL":
-			log("FACE: SCAL found")
+			internal.Log("FACE: SCAL found")
 			scal := readPayload(child).([][]uint16)
 			if len(scal) > 0 {
 				scale = scal
 			} else {
-				log("Error: ParsedData is not of type []unit16")
+				internal.Log("Error: ParsedData is not of type []unit16")
 			}
-			log("FACE: scale:", scale)
+			internal.Log("FACE: scale:", scale)
 		default:
 			//log("Unknown FourCC", klv.FourCC)
 		}
@@ -311,13 +314,13 @@ func extractcFaceData(klv KLV) []Face {
 	for _, payload := range payloads {
 		rawValues, err := parseDynamicStructure(payload, format) // todo get from gopro, honor repeat
 		if err != nil {
-			log("Error parsing dynamic structure:", err)
+			internal.Log("Error parsing dynamic structure:", err)
 			continue
 		}
 
 		// only handle version 4
 		if len(rawValues) == 0 || int(float32(rawValues[0].(uint8))/float32(scale[0][0])) != 4 {
-			log("Error: No data found or version mismatch")
+			internal.Log("Error: No data found or version mismatch")
 			faceRawData = append(faceRawData, Face{})
 			continue
 		}
@@ -335,7 +338,7 @@ func extractcFaceData(klv KLV) []Face {
 		faceRawData = append(faceRawData, face)
 	}
 
-	log("faceRawData:", faceRawData)
+	internal.Log("faceRawData:", faceRawData)
 
 	if len(faceRawData) == 0 {
 		return []Face{}
@@ -344,7 +347,7 @@ func extractcFaceData(klv KLV) []Face {
 	return faceRawData
 }
 
-func readPayload(klv KLV) any {
+func readPayload(klv parser.KLV) any {
 	switch klv.DataType {
 
 	// case int('b'): // int8_t
@@ -364,7 +367,7 @@ func readPayload(klv KLV) any {
 	case int('c'): // ASCII character string
 		//log("Type: ASCII character string")
 		// use repeat
-		log("Payload:", string(klv.Payload))
+		internal.Log("Payload:", string(klv.Payload))
 		return string(klv.Payload)
 	// case int('d'): // double
 	// 	log("Type: double (64-bit float)")
@@ -427,7 +430,7 @@ func readPayload(klv KLV) any {
 	// case int('?'): // Complex structure
 	// 	log("Type: Complex structure")
 	default:
-		log("Unknown data type")
+		internal.Log("Unknown data type")
 		return nil
 	}
 }
