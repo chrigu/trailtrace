@@ -276,6 +276,8 @@ func extractcFaceData(klv KLV) []Face {
 
 	// todo: extract types dynamically
 	// todo: handle repeat
+	// todo: handle tick tock data
+	// todo: handle multiple faces
 	var format string = ""
 	var payloads [][]byte = make([][]byte, 0)
 	var scale [][]uint16
@@ -284,22 +286,22 @@ func extractcFaceData(klv KLV) []Face {
 		// log("Processing child:", child.FourCC)
 		switch child.FourCC {
 		case "FACE":
-			log("FACE found")
+			log("FACE: found")
 			payloads = append(payloads, child.Payload)
 
 		case "TYPE":
-			log("TYPE found")
+			log("FACE: TYPE found")
 			format = readPayload(child).(string)
 
 		case "SCAL":
-			log("SCAL found")
+			log("FACE: SCAL found")
 			scal := readPayload(child).([][]uint16)
 			if len(scal) > 0 {
 				scale = scal
 			} else {
 				log("Error: ParsedData is not of type []unit16")
 			}
-			log("scale:", scale)
+			log("FACE: scale:", scale)
 		default:
 			//log("Unknown FourCC", klv.FourCC)
 		}
@@ -313,7 +315,9 @@ func extractcFaceData(klv KLV) []Face {
 			continue
 		}
 
-		if len(rawValues) == 0 {
+		// only handle version 4
+		if len(rawValues) == 0 || int(float32(rawValues[0].(uint8))/float32(scale[0][0])) != 4 {
+			log("Error: No data found or version mismatch")
 			faceRawData = append(faceRawData, Face{})
 			continue
 		}

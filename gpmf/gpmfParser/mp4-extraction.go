@@ -25,23 +25,23 @@ type TimeSample struct {
 	TimeStamp int64
 }
 
-type GPSSample struct {
+type TimedGPS struct {
 	GPS9
 	TimeSample
 }
 
 // todo: rename
-type GyroSample struct {
+type TimedGyro struct {
 	Gyroscope
 	TimeSample
 }
 
-type FaceSample struct {
+type TimedFace struct {
 	Face
 	TimeSample
 }
 
-func ExtractTelemetryDataFromMp4(file io.ReadSeeker) ([]GPSSample, []GyroSample, []FaceSample) {
+func ExtractTelemetryDataFromMp4(file io.ReadSeeker) ([]TimedGPS, []TimedGyro, []TimedFace) {
 	var metadataTrack *mp4.BoxInfo
 	var err error
 
@@ -50,12 +50,12 @@ func ExtractTelemetryDataFromMp4(file io.ReadSeeker) ([]GPSSample, []GyroSample,
 	metadataTrack, err = extractMetadataTrack(file)
 	if err != nil {
 		fmt.Println("Error extracting metadata track:", err)
-		return []GPSSample{}, []GyroSample{}, []FaceSample{}
+		return []TimedGPS{}, []TimedGyro{}, []TimedFace{}
 	}
 
 	if metadataTrack == nil {
 		fmt.Println("No metadata track found")
-		return []GPSSample{}, []GyroSample{}, []FaceSample{}
+		return []TimedGPS{}, []TimedGyro{}, []TimedFace{}
 	}
 
 	mdhdBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMdhd()})
@@ -101,7 +101,7 @@ func ExtractTelemetryDataFromMp4(file io.ReadSeeker) ([]GPSSample, []GyroSample,
 
 }
 
-func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, printTree bool) ([]GPSSample, []GyroSample, []FaceSample) {
+func ExtractTelemetryData(data []byte, telemetryMetadata *TelemetryMetadata, printTree bool) ([]TimedGPS, []TimedGyro, []TimedFace) {
 	klvs := ParseGPMF(data)
 
 	if printTree {
@@ -193,8 +193,8 @@ func getUnixTimestamp(creationTimeV0 uint32) int64 {
 	return (int64(creationTimeV0) - mp4EpochOffset) * 1000
 }
 
-func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata) []GPSSample {
-	var gpsSamples []GPSSample
+func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata) []TimedGPS {
+	var TimedGPSs []TimedGPS
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
 
@@ -206,18 +206,18 @@ func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *TelemetryMetadata)
 			}
 
 			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
-			gpsSamples = append(gpsSamples, GPSSample{GPS9: gpsData[sampleIndex], TimeSample: TimeSample{TimeStamp: sampleTime}})
+			TimedGPSs = append(TimedGPSs, TimedGPS{GPS9: gpsData[sampleIndex], TimeSample: TimeSample{TimeStamp: sampleTime}})
 			sampleIndex++
 			sampleScaleTime += timeToSample.SampleDelta
 		}
 	}
 
-	return gpsSamples
+	return TimedGPSs
 }
 
 // refactor with assignTimestampsToGps
-func assignTimestampsToFace(faceData [][]Face, telemetryMetadata *TelemetryMetadata) []FaceSample {
-	var faceSamples []FaceSample
+func assignTimestampsToFace(faceData [][]Face, telemetryMetadata *TelemetryMetadata) []TimedFace {
+	var TimedFaces []TimedFace
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
 
@@ -229,14 +229,14 @@ func assignTimestampsToFace(faceData [][]Face, telemetryMetadata *TelemetryMetad
 
 			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
 			for _, face := range faceData[sampleIndex] {
-				faceSamples = append(faceSamples, FaceSample{Face: face, TimeSample: TimeSample{TimeStamp: sampleTime}})
+				TimedFaces = append(TimedFaces, TimedFace{Face: face, TimeSample: TimeSample{TimeStamp: sampleTime}})
 			}
 			sampleIndex++
 			sampleScaleTime += timeToSample.SampleDelta
 		}
 	}
 
-	return faceSamples
+	return TimedFaces
 }
 
 // todo: refactor
@@ -244,8 +244,8 @@ func assignTimestampsToGyroWithAverage(
 	gyroData [][]Gyroscope,
 	telemetryMetadata *TelemetryMetadata,
 	downsampleIntervalMs uint32,
-) []GyroSample {
-	var gyroSamples []GyroSample
+) []TimedGyro {
+	var TimedGyros []TimedGyro
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
 
@@ -263,10 +263,10 @@ func assignTimestampsToGyroWithAverage(
 				break
 			}
 
-			currentGyroSamples := gyroData[sampleIndex]
-			sampleCount := uint32(len(currentGyroSamples))
+			currentTimedGyros := gyroData[sampleIndex]
+			sampleCount := uint32(len(currentTimedGyros))
 
-			for _, gyro := range currentGyroSamples {
+			for _, gyro := range currentTimedGyros {
 				accumulatedTime += int64(sampleScaleTime)
 
 				// Accumulate gyro values
@@ -280,7 +280,7 @@ func assignTimestampsToGyroWithAverage(
 					avgGyro := averageGyro(accumulatedGyro, count)
 					avgTime := calculateAverageTime(telemetryMetadata.CreationTime, accumulatedTime, count, telemetryMetadata.TimeScale)
 
-					gyroSamples = append(gyroSamples, GyroSample{
+					TimedGyros = append(TimedGyros, TimedGyro{
 						Gyroscope: avgGyro,
 						TimeSample: TimeSample{
 							TimeStamp: avgTime,
@@ -301,7 +301,7 @@ func assignTimestampsToGyroWithAverage(
 		}
 	}
 
-	return gyroSamples
+	return TimedGyros
 }
 
 // Helper: Compute average Gyroscope reading
