@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"gopro/gpmfParser"
 	"os"
+
+	"gopro/telemetry"
 )
 
 func main() {
@@ -22,6 +23,6 @@ func main() {
 	defer file.Close()
 
 	// Extract metadata track from the MP4 file
-	gpmfParser.ExtractTelemetryData(file, false)
+	telemetry.ExtractTelemetryData(file, false)
 	// Test()
 }

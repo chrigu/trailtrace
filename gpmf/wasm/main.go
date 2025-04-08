@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"syscall/js"
 
-	"gopro/gpmfParser"
+	"gopro/telemetry"
 )
 
 func main() {
@@ -41,7 +41,7 @@ func processFile(this js.Value, args []js.Value) any {
 			buf := bytes.NewReader(byteSlice)
 
 			// Extract GPS data
-			gpsData, gyroData, faceData := gpmfParser.ExtractTelemetryData(buf, false)
+			gpsData, gyroData, faceData := telemetry.ExtractTelemetryData(buf, false)
 
 			// Resolve the Promise with the GPS data
 			resolve.Invoke(map[string]interface{}{
@@ -62,7 +62,7 @@ func processFile(this js.Value, args []js.Value) any {
 }
 
 // Converts []GPS9 to a JavaScript array of objects
-func convertGPSToJS(gpsData []gpmfParser.TimedGPS) js.Value {
+func convertGPSToJS(gpsData []telemetry.TimedGPS) js.Value {
 	jsArray := js.Global().Get("Array").New(len(gpsData))
 	for i, coord := range gpsData {
 		// Create a JavaScript object for each GPS9 struct
@@ -76,7 +76,7 @@ func convertGPSToJS(gpsData []gpmfParser.TimedGPS) js.Value {
 	return jsArray
 }
 
-func convertGyroToJS(gpsData []gpmfParser.TimedGyro) js.Value {
+func convertGyroToJS(gpsData []telemetry.TimedGyro) js.Value {
 	jsArray := js.Global().Get("Array").New(len(gpsData))
 	for i, coord := range gpsData {
 		// Create a JavaScript object for each GPS9 struct
@@ -90,7 +90,7 @@ func convertGyroToJS(gpsData []gpmfParser.TimedGyro) js.Value {
 	return jsArray
 }
 
-func convertFaceToJS(faceData []gpmfParser.TimedFace) js.Value {
+func convertFaceToJS(faceData []telemetry.TimedFace) js.Value {
 	jsArray := js.Global().Get("Array").New(len(faceData))
 	for i, face := range faceData {
 		jsFace := js.Global().Get("Object").New()

@@ -6,6 +6,15 @@ import (
 	"gopro/internal"
 )
 
+type KLV struct {
+	FourCC   string
+	DataType int
+	DataSize uint32
+	Repeat   uint32
+	Payload  []byte
+	Children []KLV
+}
+
 func ParseGPMF(data []byte) []KLV {
 	var offset uint32 = 0
 	var klvs []KLV = make([]KLV, 0)

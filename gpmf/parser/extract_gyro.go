@@ -4,6 +4,13 @@ import (
 	"gopro/internal"
 )
 
+// Rename or add Accelerometer struct
+type Gyroscope struct {
+	X float32
+	Y float32
+	Z float32
+}
+
 func extractGyroscopeData(klv KLV) []Gyroscope {
 	// log("Processing STRM children", len(klv.Children))
 

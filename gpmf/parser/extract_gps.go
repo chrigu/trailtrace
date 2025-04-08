@@ -4,6 +4,12 @@ import (
 	"gopro/internal"
 )
 
+type GPS9 struct {
+	Latitude  float32
+	Longitude float32
+	Altitude  float32
+}
+
 func extractGpsData(klv KLV) []GPS9 {
 	// log("Processing STRM children", len(klv.Children))
 

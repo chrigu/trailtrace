@@ -2,6 +2,17 @@ package parser
 
 import "gopro/internal"
 
+type Face struct {
+	Confidence float32
+	ID         int
+	X          float32
+	Y          float32
+	W          float32
+	H          float32
+	Smile      float32
+	Blink      float32
+}
+
 // todo: handle tick tock data
 func extractcFaceData(klv KLV) []Face {
 	// struct ver,confidence %,ID,x,y,w,h,smile %, blink %
