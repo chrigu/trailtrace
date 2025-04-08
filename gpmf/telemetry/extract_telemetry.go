@@ -28,8 +28,8 @@ func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []Tim
 	}
 
 	// todo: refactor
-	gpsDataSamples := AddTimestampsToGPSData(flattenedGpsData, &telemetryMetadata)
-	gyroDataSamples := AddTimestampsToGyroDataWithDownsample(accData, &telemetryMetadata, 250)
-	faceDataSamples := AddTimestampsToFaceData(faceData, &telemetryMetadata)
-	return gpsDataSamples, gyroDataSamples, faceDataSamples
+	timedGpsData := AddTimestampsToGPSData(flattenedGpsData, &telemetryMetadata)
+	timedGyroData := AddTimestampsToGyroDataWithDownsample(accData, &telemetryMetadata, 250)
+	timedFaceData := AddTimestampsToFaceData(faceData, &telemetryMetadata)
+	return timedGpsData, timedGyroData, timedFaceData
 }

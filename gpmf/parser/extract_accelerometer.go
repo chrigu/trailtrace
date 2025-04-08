@@ -4,6 +4,10 @@ import (
 	"gopro/internal"
 )
 
+func ParseAccelerometerData(klvs []KLV) [][]Gyroscope {
+	return extractSensorData(klvs, "Accelerometer", extractAccelerometerData)
+}
+
 func extractAccelerometerData(klv KLV) []Gyroscope {
 	// log("Processing STRM children", len(klv.Children))
 

@@ -11,6 +11,10 @@ type Gyroscope struct {
 	Z float32
 }
 
+func ParseGyroscopeData(klvs []KLV) [][]Gyroscope {
+	return extractSensorData(klvs, "Gyroscope", extractGyroscopeData)
+}
+
 func extractGyroscopeData(klv KLV) []Gyroscope {
 	// log("Processing STRM children", len(klv.Children))
 

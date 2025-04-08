@@ -13,6 +13,10 @@ type Face struct {
 	Blink      float32
 }
 
+func ParseFaceData(klvs []KLV) [][]Face {
+	return extractSensorData(klvs, "Face Coordinates and details", extractcFaceData)
+}
+
 // todo: handle tick tock data
 func extractcFaceData(klv KLV) []Face {
 	// struct ver,confidence %,ID,x,y,w,h,smile %, blink %

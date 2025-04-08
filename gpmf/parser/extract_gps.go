@@ -10,6 +10,12 @@ type GPS9 struct {
 	Altitude  float32
 }
 
+func ParseGPS9Data(klvs []KLV) [][]GPS9 {
+	return extractSensorData(klvs,
+		"GPS (Lat., Long., Alt., 2D, 3D, days, secs, DOP, fix)",
+		extractGpsData)
+}
+
 func extractGpsData(klv KLV) []GPS9 {
 	// log("Processing STRM children", len(klv.Children))
 
