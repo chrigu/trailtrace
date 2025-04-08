@@ -48,13 +48,13 @@ func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []Tim
 	}
 
 	// todo: refactor
-	gpsDataSamples := assignTimestampsToGps(flattenedGpsData, &telemetryMetadata)
-	gyroDataSamples := assignTimestampsToGyroWithAverage(accData, &telemetryMetadata, 250)
-	faceDataSamples := assignTimestampsToFace(faceData, &telemetryMetadata)
+	gpsDataSamples := AddTimestampsToGPSData(flattenedGpsData, &telemetryMetadata)
+	gyroDataSamples := AddTimestampsToGyroDataWithDownsample(accData, &telemetryMetadata, 250)
+	faceDataSamples := AddTimestampsToFaceData(faceData, &telemetryMetadata)
 	return gpsDataSamples, gyroDataSamples, faceDataSamples
 }
 
-func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *mp4.TelemetryMetadata) []TimedGPS {
+func AddTimestampsToGPSData(gpsData []GPS9, telemetryMetadata *mp4.TelemetryMetadata) []TimedGPS {
 	var TimedGPSs []TimedGPS
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
@@ -76,8 +76,8 @@ func assignTimestampsToGps(gpsData []GPS9, telemetryMetadata *mp4.TelemetryMetad
 	return TimedGPSs
 }
 
-// refactor with assignTimestampsToGps
-func assignTimestampsToFace(faceData [][]Face, telemetryMetadata *mp4.TelemetryMetadata) []TimedFace {
+// refactor with AddTimestampsToGPSData
+func AddTimestampsToFaceData(faceData [][]Face, telemetryMetadata *mp4.TelemetryMetadata) []TimedFace {
 	var TimedFaces []TimedFace
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
@@ -101,7 +101,7 @@ func assignTimestampsToFace(faceData [][]Face, telemetryMetadata *mp4.TelemetryM
 }
 
 // todo: refactor
-func assignTimestampsToGyroWithAverage(
+func AddTimestampsToGyroDataWithDownsample(
 	gyroData [][]Gyroscope,
 	telemetryMetadata *mp4.TelemetryMetadata,
 	downsampleIntervalMs uint32,

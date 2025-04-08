@@ -41,7 +41,7 @@ func ExtractTelemetryFromMp4(file io.ReadSeeker) ([]byte, TelemetryMetadata) {
 
 	mdhdBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMdhd()})
 	telemetryMetadata.TimeScale = mdhdBoxes[0].Payload.(*mp4.Mdhd).Timescale
-	telemetryMetadata.CreationTime = getUnixTimestamp(mdhdBoxes[0].Payload.(*mp4.Mdhd).CreationTimeV0)
+	telemetryMetadata.CreationTime = convertMP4TimeToUnixMs(mdhdBoxes[0].Payload.(*mp4.Mdhd).CreationTimeV0)
 
 	stcoBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMinf(), mp4.BoxTypeStbl(), mp4.BoxTypeStco()})
 	for _, stcoBox := range stcoBoxes {
@@ -140,7 +140,7 @@ func readRawData(file io.ReadSeeker, telemetryMetadata *TelemetryMetadata) ([]by
 	return buffer, nil
 }
 
-func getUnixTimestamp(creationTimeV0 uint32) int64 {
+func convertMP4TimeToUnixMs(creationTimeV0 uint32) int64 {
 	// MP4 Epoch starts at 1904-01-01, Unix Epoch starts at 1970-01-01
 	mp4EpochOffset := int64(2082844800)
 
