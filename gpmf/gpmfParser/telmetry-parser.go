@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"gopro/mp4"
+	"gopro/parser"
 )
 
 type TimeSample struct {
@@ -29,7 +30,7 @@ type TimedFace struct {
 
 func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []TimedGyro, []TimedFace) {
 	data, telemetryMetadata := mp4.ExtractTelemetryFromMp4(file)
-	klvs := ParseGPMF(data)
+	klvs := parser.ParseGPMF(data)
 
 	if printTree {
 		PrintTree(klvs, "")

@@ -2,10 +2,12 @@ package gpmfParser
 
 import (
 	"fmt"
+
+	"gopro/parser"
 )
 
 // PrintTree recursively prints the KLV hierarchy in a tree structure
-func PrintTree(klvs []KLV, prefix string) {
+func PrintTree(klvs []parser.KLV, prefix string) {
 	for i, klv := range klvs {
 		// Determine tree branching characters
 		connector := "├──"
