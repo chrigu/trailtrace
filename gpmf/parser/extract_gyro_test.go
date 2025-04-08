@@ -1,4 +1,4 @@
-package gpmfParser
+package parser
 
 import (
 	"encoding/binary"

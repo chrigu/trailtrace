@@ -13,18 +13,18 @@ type TimeSample struct {
 }
 
 type TimedGPS struct {
-	GPS9
+	parser.GPS9
 	TimeSample
 }
 
 // todo: rename
 type TimedGyro struct {
-	Gyroscope
+	parser.Gyroscope
 	TimeSample
 }
 
 type TimedFace struct {
-	Face
+	parser.Face
 	TimeSample
 }
 
@@ -37,12 +37,12 @@ func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []Tim
 	}
 
 	fmt.Println("KLVs", len(klvs))
-	gpsData := parseGPS9Data(klvs)
-	gyroData := parseGyroscopeData(klvs)
-	accData := parseAccelerometerData(klvs)
-	faceData := parsecFaceData(klvs)
+	gpsData := parser.ParseGPS9Data(klvs)
+	gyroData := parser.ParseGyroscopeData(klvs)
+	accData := parser.ParseAccelerometerData(klvs)
+	faceData := parser.ParseFaceData(klvs)
 	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData), "Acc data:", len(accData), "Face data:", len(faceData))
-	flattenedGpsData := make([]GPS9, 0)
+	flattenedGpsData := make([]parser.GPS9, 0)
 	for _, gpsSlice := range gpsData {
 		flattenedGpsData = append(flattenedGpsData, gpsSlice...)
 	}
@@ -54,7 +54,7 @@ func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []Tim
 	return gpsDataSamples, gyroDataSamples, faceDataSamples
 }
 
-func AddTimestampsToGPSData(gpsData []GPS9, telemetryMetadata *mp4.TelemetryMetadata) []TimedGPS {
+func AddTimestampsToGPSData(gpsData []parser.GPS9, telemetryMetadata *mp4.TelemetryMetadata) []TimedGPS {
 	var TimedGPSs []TimedGPS
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
@@ -77,7 +77,7 @@ func AddTimestampsToGPSData(gpsData []GPS9, telemetryMetadata *mp4.TelemetryMeta
 }
 
 // refactor with AddTimestampsToGPSData
-func AddTimestampsToFaceData(faceData [][]Face, telemetryMetadata *mp4.TelemetryMetadata) []TimedFace {
+func AddTimestampsToFaceData(faceData [][]parser.Face, telemetryMetadata *mp4.TelemetryMetadata) []TimedFace {
 	var TimedFaces []TimedFace
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
@@ -102,7 +102,7 @@ func AddTimestampsToFaceData(faceData [][]Face, telemetryMetadata *mp4.Telemetry
 
 // todo: refactor
 func AddTimestampsToGyroDataWithDownsample(
-	gyroData [][]Gyroscope,
+	gyroData [][]parser.Gyroscope,
 	telemetryMetadata *mp4.TelemetryMetadata,
 	downsampleIntervalMs uint32,
 ) []TimedGyro {
@@ -110,7 +110,7 @@ func AddTimestampsToGyroDataWithDownsample(
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
 
-	var accumulatedGyro Gyroscope
+	var accumulatedGyro parser.Gyroscope
 	var accumulatedTime int64 = 0
 	var count uint32 = 0
 	var lastSampleScaleTime int64 = 0
@@ -149,7 +149,7 @@ func AddTimestampsToGyroDataWithDownsample(
 					})
 
 					// Reset accumulators
-					accumulatedGyro = Gyroscope{}
+					accumulatedGyro = parser.Gyroscope{}
 					lastSampleScaleTime = int64(sampleScaleTime)
 					accumulatedTime = 0
 					count = 0
@@ -166,8 +166,8 @@ func AddTimestampsToGyroDataWithDownsample(
 }
 
 // Helper: Compute average Gyroscope reading
-func averageGyro(accumulated Gyroscope, count uint32) Gyroscope {
-	return Gyroscope{
+func averageGyro(accumulated parser.Gyroscope, count uint32) parser.Gyroscope {
+	return parser.Gyroscope{
 		X: accumulated.X / float32(count),
 		Y: accumulated.Y / float32(count),
 		Z: accumulated.Z / float32(count),
