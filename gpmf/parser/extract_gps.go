@@ -49,7 +49,7 @@ func extractGpsData(klv KLV) []GPS9 {
 		}
 	}
 
-	gpsRawData, err := parseDynamicStructure(payload, format) // todo get from gopro, honor repeat
+	gpsRawData, err := parseDynamicStructure(payload, format) // make easier, check type and make struct
 	if err != nil {
 		internal.Log("Error parsing dynamic structure:", err)
 	}

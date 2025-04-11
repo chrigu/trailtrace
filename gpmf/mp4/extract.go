@@ -61,7 +61,7 @@ func ExtractTelemetryFromMp4(file io.ReadSeeker) ([]byte, TelemetryMetadata) {
 	//error handling
 	fmt.Println("Offset mdat", mdatBoxes[0].Offset, "Size mdat", mdatBoxes[0].Size)
 
-	fmt.Println("Telemetry Metadata", telemetryMetadata.TimeScale, telemetryMetadata.TimeToSamples)
+	//fmt.Println("Telemetry Metadata", telemetryMetadata.TimeScale, telemetryMetadata.TimeToSamples)
 
 	data, _ := readRawData(file, &telemetryMetadata)
 

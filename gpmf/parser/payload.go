@@ -15,9 +15,9 @@ func readPayload(klv KLV) any {
 		// 	log("Type: uint8_t")
 		payload := make([][]uint8, klv.Repeat)
 		for i := range klv.Repeat {
-			dataPackets := make([]uint8, klv.DataSize/2)
-			for j := range klv.DataSize / 2 {
-				offset := (i*klv.DataSize/2 + j) * 2
+			dataPackets := make([]uint8, klv.DataSize)
+			for j := range klv.DataSize {
+				offset := (i*klv.DataSize + j)
 				dataPackets[j] = klv.Payload[offset]
 			}
 			payload[i] = dataPackets

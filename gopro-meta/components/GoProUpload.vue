@@ -30,6 +30,7 @@ const handleFile = async (event: Event) => {
       store.setGpsData(metadata.gpsData);
       store.setGyroData(metadata.gyroData);
       store.setFaceData(metadata.faceData);
+      store.setLuminanceData(metadata.lumaData);
     } catch (err) {
       console.error("Error processing file:", err);
     }

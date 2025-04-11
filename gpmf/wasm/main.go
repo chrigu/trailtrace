@@ -41,13 +41,14 @@ func processFile(this js.Value, args []js.Value) any {
 			buf := bytes.NewReader(byteSlice)
 
 			// Extract GPS data
-			gpsData, gyroData, faceData := telemetry.ExtractTelemetryData(buf, false)
+			gpsData, gyroData, faceData, lumaData := telemetry.ExtractTelemetryData(buf, false)
 
 			// Resolve the Promise with the GPS data
 			resolve.Invoke(map[string]interface{}{
 				"gpsData":  convertGPSToJS(gpsData),
 				"gyroData": convertGyroToJS(gyroData),
 				"faceData": convertFaceToJS(faceData),
+				"lumaData": convertLumaToJS(lumaData),
 			})
 			return nil
 		}))
@@ -104,6 +105,17 @@ func convertFaceToJS(faceData []telemetry.TimedFace) js.Value {
 		jsFace.Set("blink", face.Blink)
 		jsFace.Set("timestamp", face.TimeStamp)
 		jsArray.SetIndex(i, jsFace)
+	}
+	return jsArray
+}
+
+func convertLumaToJS(lumaData []telemetry.TimedLuma) js.Value {
+	jsArray := js.Global().Get("Array").New(len(lumaData))
+	for i, luma := range lumaData {
+		jsLuma := js.Global().Get("Object").New()
+		jsLuma.Set("luma", luma.Luminance)
+		jsLuma.Set("timestamp", luma.TimeStamp)
+		jsArray.SetIndex(i, jsLuma)
 	}
 	return jsArray
 }

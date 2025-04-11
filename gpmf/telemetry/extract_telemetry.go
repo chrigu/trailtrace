@@ -8,7 +8,7 @@ import (
 	"gopro/parser"
 )
 
-func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []TimedGyro, []TimedFace) {
+func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []TimedGyro, []TimedFace, []TimedLuma) {
 	data, telemetryMetadata := mp4.ExtractTelemetryFromMp4(file)
 	klvs := parser.ParseGPMF(data)
 
@@ -21,15 +21,22 @@ func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []Tim
 	gyroData := parser.ParseGyroscopeData(klvs)
 	accData := parser.ParseAccelerometerData(klvs)
 	faceData := parser.ParseFaceData(klvs)
-	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData), "Acc data:", len(accData), "Face data:", len(faceData))
+	lumaData := parser.ParseLumaData(klvs)
+	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData), "Acc data:", len(accData), "Face data:", len(faceData), "luma data:", len(lumaData))
 	flattenedGpsData := make([]parser.GPS9, 0)
 	for _, gpsSlice := range gpsData {
 		flattenedGpsData = append(flattenedGpsData, gpsSlice...)
+	}
+
+	flattenedLumaData := make([]parser.Luma, 0)
+	for _, lumaSlice := range lumaData {
+		flattenedLumaData = append(flattenedLumaData, lumaSlice...)
 	}
 
 	// todo: refactor
 	timedGpsData := AddTimestampsToGPSData(flattenedGpsData, &telemetryMetadata)
 	timedGyroData := AddTimestampsToGyroDataWithDownsample(accData, &telemetryMetadata, 250)
 	timedFaceData := AddTimestampsToFaceData(faceData, &telemetryMetadata)
-	return timedGpsData, timedGyroData, timedFaceData
+	timedLumaData := AddTimestampsToLumaData(flattenedLumaData, &telemetryMetadata)
+	return timedGpsData, timedGyroData, timedFaceData, timedLumaData
 }

@@ -27,6 +27,10 @@ export interface FaceData {
   timestamp: number;
 }
 
+export interface LuminanceData {
+  luminance: number;
+  timestamp: number;
+}
 
 
 export const useStore = defineStore('metaData', {
@@ -34,6 +38,7 @@ export const useStore = defineStore('metaData', {
     gpsData: [] as GpsData[],
     accelerationData: [] as AccelerationData[],
     faceData: [] as FaceData[],
+    luminanceData: [] as LuminanceData[],
     videoCurrentTime: 0,
     videoUrl: '',
   }),
@@ -63,6 +68,10 @@ export const useStore = defineStore('metaData', {
       const startTime = state.faceData[0]?.timestamp;
       return findClosestObject(state.faceData, state.videoCurrentTime, startTime);
     },
+    currentLuminanceData(state) {
+      const startTime = state.accelerationData[0]?.timestamp;
+      return findClosestObject(state.luminanceData, state.videoCurrentTime, startTime);
+    },
   },
 
   actions: {
@@ -74,6 +83,9 @@ export const useStore = defineStore('metaData', {
     },
     setFaceData(data: FaceData[]) {
       this.faceData = data.filter(face => face.confidence > 0 && face.x > 0 && face.y > 0 && face.w > 0 && face.h > 0);
+    },
+    setLuminanceData(data: LuminanceData[]) {
+      this.luminanceData = data;
     },
     setVideoCurrentTime(time: number) {
       this.videoCurrentTime = time;

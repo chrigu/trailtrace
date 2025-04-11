@@ -20,6 +20,7 @@ func ParseFaceData(klvs []KLV) [][]Face {
 // todo: handle tick tock data
 func extractcFaceData(klv KLV) []Face {
 	// struct ver,confidence %,ID,x,y,w,h,smile %, blink %
+	// maybe check structure and don't parse dynamic data. Use a struct instead
 	// BBSSSSSBB
 
 	// todo: extract types dynamically

@@ -54,6 +54,7 @@ onMounted(async () => {
   <section class="mx-4 flex flex-row gap-x-4">
     <div>
       <GoProUpload class="mb-4" />
+      <Luminance />
       <FaceBox v-if="store.videoUrl">
         <video ref="videoElement" :src="store.videoUrl" controls width="600" @timeupdate="updateCurrentTime"></video>
       </FaceBox>
@@ -71,5 +72,6 @@ onMounted(async () => {
     <p v-if="store.videoUrl">Current GPS Data:<pre>{{ store.currentGpsData }}</pre></p>
     <p v-if="store.videoUrl">Current Acceleration Data:<pre>{{ store.currentAccelerationData }}</pre></p>
     <p v-if="store.videoUrl">Current Face Data:<pre>{{ store.currentFaceData }}</pre></p>
+    <p v-if="store.videoUrl">Current Luminance Data:<pre>{{ store.currentLuminanceData }}</pre></p>
   </section>
 </template>
