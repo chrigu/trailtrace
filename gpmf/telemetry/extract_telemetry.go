@@ -8,7 +8,7 @@ import (
 	"gopro/parser"
 )
 
-func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []TimedGyro, []TimedFace, []TimedLuma) {
+func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []TimedGyro, []TimedFace, []TimedLuma, []TimedColor) {
 	data, telemetryMetadata := mp4.ExtractTelemetryFromMp4(file)
 	klvs := parser.ParseGPMF(data)
 
@@ -22,7 +22,8 @@ func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []Tim
 	accData := parser.ParseAccelerometerData(klvs)
 	faceData := parser.ParseFaceData(klvs)
 	lumaData := parser.ParseLumaData(klvs)
-	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData), "Acc data:", len(accData), "Face data:", len(faceData), "luma data:", len(lumaData))
+	colorData := parser.ParseColorData(klvs)
+	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData), "Acc data:", len(accData), "Face data:", len(faceData), "luma data:", len(lumaData), "hue data:", len(colorData))
 	flattenedGpsData := make([]parser.GPS9, 0)
 	for _, gpsSlice := range gpsData {
 		flattenedGpsData = append(flattenedGpsData, gpsSlice...)
@@ -33,10 +34,16 @@ func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []Tim
 		flattenedLumaData = append(flattenedLumaData, lumaSlice...)
 	}
 
+	flattenedColorData := make([]parser.Color, 0)
+	for _, colorSlice := range colorData {
+		flattenedColorData = append(flattenedColorData, colorSlice...)
+	}
+
 	// todo: refactor
 	timedGpsData := AddTimestampsToGPSData(flattenedGpsData, &telemetryMetadata)
 	timedGyroData := AddTimestampsToGyroDataWithDownsample(accData, &telemetryMetadata, 250)
 	timedFaceData := AddTimestampsToFaceData(faceData, &telemetryMetadata)
 	timedLumaData := AddTimestampsToLumaData(flattenedLumaData, &telemetryMetadata)
-	return timedGpsData, timedGyroData, timedFaceData, timedLumaData
+	timedHueData := AddTimestampsToHueData(flattenedColorData, &telemetryMetadata)
+	return timedGpsData, timedGyroData, timedFaceData, timedLumaData, timedHueData
 }

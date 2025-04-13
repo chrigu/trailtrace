@@ -25,12 +25,13 @@ const handleFile = async (event: Event) => {
 
   if (window.processFile) {
     try {
-      const metadata = await window.processFile(file) as {gpsData: GpsData[], gyroData: any[], faceData: any[]};
+      const metadata = await window.processFile(file) as {gpsData: GpsData[], gyroData: any[], faceData: any[], lumaData: any[], hueData: any[]};
       console.log("Metadata data:", metadata);
       store.setGpsData(metadata.gpsData);
       store.setGyroData(metadata.gyroData);
       store.setFaceData(metadata.faceData);
       store.setLuminanceData(metadata.lumaData);
+      store.setHueData(metadata.hueData);
     } catch (err) {
       console.error("Error processing file:", err);
     }

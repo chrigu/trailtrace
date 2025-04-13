@@ -22,6 +22,7 @@ func extractGpsData(klv KLV) []GPS9 {
 	// todo: extract types dynamically
 	var format string = ""
 	var payload []byte = make([]byte, 0)
+	var repeat uint32 = 0
 	var scale [][]int32
 
 	for _, child := range klv.Children {
@@ -31,7 +32,7 @@ func extractGpsData(klv KLV) []GPS9 {
 		case "GPS9":
 			internal.Log("GPS9 found")
 			payload = child.Payload
-
+			repeat = child.Repeat
 		case "TYPE":
 			internal.Log("TYPE found")
 			format = readPayload(child).(string)
@@ -49,16 +50,39 @@ func extractGpsData(klv KLV) []GPS9 {
 		}
 	}
 
-	gpsRawData, err := parseDynamicStructure(payload, format) // make easier, check type and make struct
+	gpsRawData, err := parseDynamicStructure(payload, format, repeat) // make easier, check type and make struct
 	if err != nil {
 		internal.Log("Error parsing dynamic structure:", err)
+		return []GPS9{} // Return empty slice on error
 	}
 
-	return []GPS9{
-		{
-			Latitude:  float32(gpsRawData[0].(int32)) / float32(scale[0][0]),
-			Longitude: float32(gpsRawData[1].(int32)) / float32(scale[1][0]),
-			Altitude:  float32(gpsRawData[2].(int32)) / float32(scale[2][0]),
-		},
+	// Create a slice to hold all GPS values
+	gpsValues := make([]GPS9, len(gpsRawData))
+
+	// Process each GPS value
+	for i, rawData := range gpsRawData {
+		if len(rawData) < 3 {
+			internal.Log("Incomplete GPS data at index %d", i)
+			continue
+		}
+
+		// Extract and convert the values with proper type assertions
+		lat, ok1 := rawData[0].(int32)
+		lon, ok2 := rawData[1].(int32)
+		alt, ok3 := rawData[2].(int32)
+
+		if !ok1 || !ok2 || !ok3 {
+			internal.Log("Type assertion failed for GPS data at index %d", i)
+			continue
+		}
+
+		gpsValues[i] = GPS9{
+			Latitude:  float32(lat) / float32(scale[0][0]),
+			Longitude: float32(lon) / float32(scale[1][0]),
+			Altitude:  float32(alt) / float32(scale[2][0]),
+		}
 	}
+
+	internal.Log("Extracted %d GPS values", len(gpsValues))
+	return gpsValues
 }

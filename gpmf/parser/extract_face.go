@@ -30,6 +30,7 @@ func extractcFaceData(klv KLV) []Face {
 	var format string = ""
 	var payloads [][]byte = make([][]byte, 0)
 	var scale [][]uint16
+	var repeat uint32 = 0
 
 	for _, child := range klv.Children {
 		// log("Processing child:", child.FourCC)
@@ -56,39 +57,60 @@ func extractcFaceData(klv KLV) []Face {
 		}
 	}
 
-	faceRawData := make([]Face, 0)
+	faces := make([]Face, 0)
 	for _, payload := range payloads {
-		rawValues, err := parseDynamicStructure(payload, format) // todo get from gopro, honor repeat
+		rawValues, err := parseDynamicStructure(payload, format, repeat) // todo get from gopro, honor repeat
 		if err != nil {
 			internal.Log("Error parsing dynamic structure:", err)
 			continue
 		}
 
-		// only handle version 4
-		if len(rawValues) == 0 || int(float32(rawValues[0].(uint8))/float32(scale[0][0])) != 4 {
-			internal.Log("Error: No data found or version mismatch")
-			faceRawData = append(faceRawData, Face{})
-			continue
-		}
+		for i, values := range rawValues {
+			if len(values) < 9 {
+				internal.Log("Incomplete face data at index %d", i)
+				continue
+			}
 
-		face := Face{
-			Confidence: float32(rawValues[1].(uint8)) / float32(scale[1][0]),
-			ID:         int(float32(rawValues[2].(uint16)) / float32(scale[2][0])),
-			X:          float32(rawValues[3].(uint16)) / float32(scale[3][0]),
-			Y:          float32(rawValues[4].(uint16)) / float32(scale[4][0]),
-			W:          float32(rawValues[5].(uint16)) / float32(scale[5][0]),
-			H:          float32(rawValues[6].(uint16)) / float32(scale[6][0]),
-			Smile:      float32(rawValues[7].(uint8)) / float32(scale[7][0]),
-			Blink:      float32(rawValues[8].(uint8)) / float32(scale[8][0]),
+			// only handle version 4
+			if len(values) == 0 || int(float32(values[0].(uint8))/float32(scale[0][0])) != 4 {
+				internal.Log("Error: No data found or version mismatch")
+				faces = append(faces, Face{})
+				continue
+			}
+
+			// Extract and convert the values with proper type assertions
+			confidence, ok1 := values[1].(uint8)
+			id, ok2 := values[2].(uint16)
+			x, ok3 := values[3].(uint16)
+			y, ok4 := values[4].(uint16)
+			w, ok5 := values[5].(uint16)
+			h, ok6 := values[6].(uint16)
+			smile, ok7 := values[7].(uint8)
+			blink, ok8 := values[8].(uint8)
+
+			if !ok1 || !ok2 || !ok3 || !ok4 || !ok5 || !ok6 || !ok7 || !ok8 {
+				internal.Log("Type assertion failed for face data at index %d", i)
+				continue
+			}
+
+			faces[i] = Face{
+				Confidence: float32(confidence) / float32(scale[1][0]),
+				ID:         int(float32(id) / float32(scale[2][0])),
+				X:          float32(x) / float32(scale[3][0]),
+				Y:          float32(y) / float32(scale[4][0]),
+				W:          float32(w) / float32(scale[5][0]),
+				H:          float32(h) / float32(scale[6][0]),
+				Smile:      float32(smile) / float32(scale[7][0]),
+				Blink:      float32(blink) / float32(scale[8][0]),
+			}
 		}
-		faceRawData = append(faceRawData, face)
 	}
 
-	internal.Log("faceRawData:", faceRawData)
+	internal.Log("faceRawData:", faces)
 
-	if len(faceRawData) == 0 {
+	if len(faces) == 0 {
 		return []Face{}
 	}
 
-	return faceRawData
+	return faces
 }

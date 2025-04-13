@@ -41,7 +41,7 @@ func processFile(this js.Value, args []js.Value) any {
 			buf := bytes.NewReader(byteSlice)
 
 			// Extract GPS data
-			gpsData, gyroData, faceData, lumaData := telemetry.ExtractTelemetryData(buf, false)
+			gpsData, gyroData, faceData, lumaData, colorData := telemetry.ExtractTelemetryData(buf, false)
 
 			// Resolve the Promise with the GPS data
 			resolve.Invoke(map[string]interface{}{
@@ -49,6 +49,7 @@ func processFile(this js.Value, args []js.Value) any {
 				"gyroData": convertGyroToJS(gyroData),
 				"faceData": convertFaceToJS(faceData),
 				"lumaData": convertLumaToJS(lumaData),
+				"hueData":  convertColorsToJS(colorData),
 			})
 			return nil
 		}))
@@ -116,6 +117,32 @@ func convertLumaToJS(lumaData []telemetry.TimedLuma) js.Value {
 		jsLuma.Set("luma", luma.Luminance)
 		jsLuma.Set("timestamp", luma.TimeStamp)
 		jsArray.SetIndex(i, jsLuma)
+	}
+	return jsArray
+}
+
+func convertColorsToJS(colorData []telemetry.TimedColor) js.Value {
+	jsArray := js.Global().Get("Array").New(len(colorData))
+	for i, color := range colorData {
+		jsColor := js.Global().Get("Object").New()
+		jsRed := js.Global().Get("Object").New()
+		jsRed.Set("hue", color.Red.Hue)
+		jsRed.Set("weight", color.Red.Weight)
+
+		jsGreen := js.Global().Get("Object").New()
+		jsGreen.Set("hue", color.Green.Hue)
+		jsGreen.Set("weight", color.Green.Weight)
+
+		jsBlue := js.Global().Get("Object").New()
+		jsBlue.Set("hue", color.Blue.Hue)
+		jsBlue.Set("weight", color.Blue.Weight)
+
+		jsColor.Set("red", jsRed)
+		jsColor.Set("green", jsGreen)
+		jsColor.Set("blue", jsBlue)
+		jsColor.Set("timestamp", color.TimeStamp)
+
+		jsArray.SetIndex(i, jsColor)
 	}
 	return jsArray
 }

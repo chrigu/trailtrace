@@ -1,9 +1,5 @@
 package parser
 
-import (
-	"gopro/internal"
-)
-
 type Luma struct {
 	Luminance uint8
 }
@@ -23,7 +19,6 @@ func extractLumaData(klv KLV) []Luma {
 
 		switch child.FourCC {
 		case "YAVG":
-			internal.Log("YAVG found")
 			payload = readPayload(child).([][]uint8)
 
 		default:
