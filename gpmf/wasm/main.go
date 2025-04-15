@@ -49,7 +49,7 @@ func processFile(this js.Value, args []js.Value) any {
 				"gyroData": convertGyroToJS(gyroData),
 				"faceData": convertFaceToJS(faceData),
 				"lumaData": convertLumaToJS(lumaData),
-				"hueData":  convertColorsToJS(colorData),
+				"hueData":  convertHuesToJS(colorData),
 			})
 			return nil
 		}))
@@ -121,28 +121,32 @@ func convertLumaToJS(lumaData []telemetry.TimedLuma) js.Value {
 	return jsArray
 }
 
-func convertColorsToJS(colorData []telemetry.TimedColor) js.Value {
-	jsArray := js.Global().Get("Array").New(len(colorData))
-	for i, color := range colorData {
-		jsColor := js.Global().Get("Object").New()
-		jsRed := js.Global().Get("Object").New()
-		jsRed.Set("hue", color.Red.Hue)
-		jsRed.Set("weight", color.Red.Weight)
+func convertHuesToJS(hueData []telemetry.TimedHue) js.Value {
+	jsArray := js.Global().Get("Array").New(len(hueData))
+	for i, timedHue := range hueData {
+		// Create a JavaScript object for each TimedHue
+		jsHue := js.Global().Get("Object").New()
 
-		jsGreen := js.Global().Get("Object").New()
-		jsGreen.Set("hue", color.Green.Hue)
-		jsGreen.Set("weight", color.Green.Weight)
+		// Create an array for the hues
+		jsHues := js.Global().Get("Array").New(len(timedHue.Hues))
 
-		jsBlue := js.Global().Get("Object").New()
-		jsBlue.Set("hue", color.Blue.Hue)
-		jsBlue.Set("weight", color.Blue.Weight)
+		// Process each hue in the Hues array
+		for j, hue := range timedHue.Hues {
+			// Create a JavaScript object for each hue
+			jsHueObj := js.Global().Get("Object").New()
+			jsHueObj.Set("hue", hue.Hue)
+			jsHueObj.Set("weight", hue.Weight)
 
-		jsColor.Set("red", jsRed)
-		jsColor.Set("green", jsGreen)
-		jsColor.Set("blue", jsBlue)
-		jsColor.Set("timestamp", color.TimeStamp)
+			// Add to the hues array
+			jsHues.SetIndex(j, jsHueObj)
+		}
 
-		jsArray.SetIndex(i, jsColor)
+		// Set the hues array and timestamp
+		jsHue.Set("hues", jsHues)
+		jsHue.Set("timestamp", timedHue.TimeStamp)
+
+		// Add to the main array
+		jsArray.SetIndex(i, jsHue)
 	}
 	return jsArray
 }

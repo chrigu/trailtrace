@@ -1,14 +1,21 @@
 <template>
   <div v-if="store.currentHueData">
-    <!-- Show color box -->
-    <div
-      :style="{
-        backgroundColor: colorStyle,
-        width: '100px',
-        height: '100px',
-        border: '1px solid #000',
-      }"
-    ></div>
+    <h3>Predominant Hues</h3>
+    <div class="hues-container">
+      <div v-for="(hue, index) in store.currentHueData.hues" :key="index" class="hue-item">
+        <div 
+          :style="{
+            backgroundColor: `hsl(${hue.hue}, 100%, ${hue.weight}%)`,
+            width: '50px',
+            height: '50px',
+            border: '1px solid #000',
+            marginBottom: '5px'
+          }"
+        ></div>
+        <div>Hue: {{ hue.hue.toFixed(1) }}°</div>
+        <div>Weight: {{ hue.weight.toFixed(1) }}%</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -17,12 +24,18 @@ import { computed } from 'vue'
 import { useStore } from "~/store";
 
 const store = useStore()
+</script>
 
-// Compute the CSS color style from the RGB values
-const colorStyle = computed(() => {
-  if (!store.currentHueData) return 'transparent'
-  
-  const { red, green, blue } = store.currentHueData
-  return `rgb(${red}, ${green}, ${blue})`
-})
-</script> 
+<style scoped>
+.hues-container {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.hue-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+</style> 

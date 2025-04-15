@@ -30,7 +30,7 @@ func extractcFaceData(klv KLV) []Face {
 	var format string = ""
 	var payloads [][]byte = make([][]byte, 0)
 	var scale [][]uint16
-	var repeat uint32 = 0
+	var repeat uint32 = 1
 
 	for _, child := range klv.Children {
 		// log("Processing child:", child.FourCC)
@@ -57,7 +57,7 @@ func extractcFaceData(klv KLV) []Face {
 		}
 	}
 
-	faces := make([]Face, 0)
+	faces := make([]Face, len(payloads))
 	for _, payload := range payloads {
 		rawValues, err := parseDynamicStructure(payload, format, repeat) // todo get from gopro, honor repeat
 		if err != nil {

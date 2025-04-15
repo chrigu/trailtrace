@@ -41,8 +41,10 @@ func TestExtractHueData(t *testing.T) {
 	}
 
 	// 4. Expected Output
-	expected := []Color{
-		{Red: Hue{Hue: 10, Weight: 20}, Green: Hue{Hue: 30, Weight: 40}, Blue: Hue{Hue: 50, Weight: 60}},
+	expected := []Hue{
+		{Hue: 10, Weight: 20},
+		{Hue: 30, Weight: 40},
+		{Hue: 50, Weight: 60},
 	}
 
 	// 5. Run the function
@@ -66,7 +68,7 @@ func TestParseHueData(t *testing.T) {
 						{
 							FourCC:   "HUES",
 							DataType: int('B'),
-							Repeat:   2,
+							Repeat:   3,
 							DataSize: 2,
 							Payload:  []byte{10, 20, 30, 40, 50, 60},
 						},
@@ -89,14 +91,16 @@ func TestParseHueData(t *testing.T) {
 	}
 
 	// 2. Expected Output
-	expected := [][]Color{
+	expected := [][]Hue{
 		{
-			{Red: Hue{Hue: 10, Weight: 20}, Green: Hue{Hue: 30, Weight: 40}, Blue: Hue{Hue: 50, Weight: 60}},
+			{Hue: 10, Weight: 20},
+			{Hue: 30, Weight: 40},
+			{Hue: 50, Weight: 60},
 		},
 	}
 
 	// 3. Run the function
-	result := ParseColorData(klvs)
+	result := ParseHueData(klvs)
 
 	// 4. Assertion
 	if !reflect.DeepEqual(result, expected) {

@@ -5,28 +5,22 @@ import (
 	"gopro/parser"
 )
 
-type TimedColor struct {
-	parser.Color
+type TimedHue struct {
+	Hues []parser.Hue
 	TimeSample
 }
 
-func AddTimestampsToHueData(colorData []parser.Color, telemetryMetadata *mp4.TelemetryMetadata) []TimedColor {
-	var timedHues []TimedColor
-	var sampleIndex uint32 = 0
+func AddTimestampsToHueData(hueData [][]parser.Hue, telemetryMetadata *mp4.TelemetryMetadata) []TimedHue {
+	var timedHues []TimedHue
 	var sampleScaleTime uint32 = 0
 
-	for _, timeToSample := range telemetryMetadata.TimeToSamples {
-		for i := 0; i < int(timeToSample.SampleCount); i++ {
-
-			if sampleIndex >= uint32(len(colorData)) {
-				break
-			}
-
-			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
-			timedHues = append(timedHues, TimedColor{Color: colorData[sampleIndex], TimeSample: TimeSample{TimeStamp: sampleTime}})
-			sampleIndex++
-			sampleScaleTime += timeToSample.SampleDelta
-		}
+	for _, hues := range hueData {
+		sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
+		timedHues = append(timedHues, TimedHue{
+			Hues:       hues,
+			TimeSample: TimeSample{TimeStamp: sampleTime},
+		})
+		sampleScaleTime += telemetryMetadata.TimeToSamples[0].SampleDelta
 	}
 
 	return timedHues

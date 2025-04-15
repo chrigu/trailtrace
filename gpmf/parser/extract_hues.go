@@ -9,20 +9,14 @@ type Hue struct {
 	Weight uint8
 }
 
-type Color struct {
-	Red   Hue
-	Green Hue
-	Blue  Hue
-}
-
 // todo: rename to hue
-func ParseColorData(klvs []KLV) [][]Color {
+func ParseHueData(klvs []KLV) [][]Hue {
 	return extractSensorData(klvs,
 		"Predominant hue[[hue, weight], ...]",
 		extractHueData)
 }
 
-func extractHueData(klv KLV) []Color {
+func extractHueData(klv KLV) []Hue {
 	// log("Processing STRM children", len(klv.Children))
 
 	// todo: extract types dynamically
@@ -52,11 +46,11 @@ func extractHueData(klv KLV) []Color {
 	hueRaw, err := parseDynamicStructure(payload, format, repeat) // make easier, check type and make struct
 	if err != nil {
 		internal.Log("Error parsing dynamic structure:", err)
-		return []Color{}
+		return []Hue{}
 	}
 
 	// Each color has 3 hues (RGB), so we need to process them in groups of 3
-	colors := make([]Color, len(hueRaw)/3)
+	hues := make([]Hue, len(hueRaw))
 
 	for i := 0; i < len(hueRaw); i += 3 {
 		if i+2 >= len(hueRaw) {
@@ -64,24 +58,23 @@ func extractHueData(klv KLV) []Color {
 		}
 
 		// Extract the hue values for each color component
-		redHue, ok1 := hueRaw[i][0].(uint8)
-		redWeight, ok2 := hueRaw[i][1].(uint8)
-		greenHue, ok3 := hueRaw[i+1][0].(uint8)
-		greenWeight, ok4 := hueRaw[i+1][1].(uint8)
-		blueHue, ok5 := hueRaw[i+2][0].(uint8)
-		blueWeight, ok6 := hueRaw[i+2][1].(uint8)
+		colorHue1, ok1 := hueRaw[i][0].(uint8)
+		colorWeight1, ok2 := hueRaw[i][1].(uint8)
+		colorHue2, ok3 := hueRaw[i+1][0].(uint8)
+		colorWeight2, ok4 := hueRaw[i+1][1].(uint8)
+		colorHue3, ok5 := hueRaw[i+2][0].(uint8)
+		colorWeight3, ok6 := hueRaw[i+2][1].(uint8)
 
 		if !ok1 || !ok2 || !ok3 || !ok4 || !ok5 || !ok6 {
 			internal.Log("Type assertion failed for color at index %d", i/3)
 			continue
 		}
 
-		colors[i/3] = Color{
-			Red:   Hue{Hue: redHue, Weight: redWeight},
-			Green: Hue{Hue: greenHue, Weight: greenWeight},
-			Blue:  Hue{Hue: blueHue, Weight: blueWeight},
-		}
+		// Add each hue to the slice
+		hues[i] = Hue{Hue: colorHue1, Weight: colorWeight1}
+		hues[i+1] = Hue{Hue: colorHue2, Weight: colorWeight2}
+		hues[i+2] = Hue{Hue: colorHue3, Weight: colorWeight3}
 	}
 
-	return colors
+	return hues
 }

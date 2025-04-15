@@ -33,18 +33,10 @@ export interface LuminanceData {
 }
 
 export interface HueData {
-  red: {
+  hues: {
     hue: number;
     weight: number;
-  };
-  green: { 
-    hue: number;
-    weight: number;
-  };
-  blue: {
-    hue: number;
-    weight: number;
-  };  
+  }[];
   timestamp: number;
 }
 
@@ -62,7 +54,7 @@ export const useStore = defineStore('metaData', {
     accelerationData: [] as AccelerationData[],
     faceData: [] as FaceData[],
     luminanceData: [] as LuminanceData[],
-    hueData: [] as ColorData[],
+    hueData: [] as HueData[],
     videoCurrentTime: 0,
     videoUrl: '',
   }),
@@ -116,16 +108,13 @@ export const useStore = defineStore('metaData', {
       this.luminanceData = data;
     },
     setHueData(data: HueData[]) {
-      this.hueData = data.map(hue => {
-        // convert hue to rgb
-        const rgb = blendHues([hue.red.hue, hue.green.hue, hue.blue.hue], [hue.red.weight, hue.green.weight, hue.blue.weight]);
-        return {
-          red: rgb[0],
-          green: rgb[1],
-          blue: rgb[2],
-          timestamp: hue.timestamp,
-        };
-      });
+      this.hueData = data.map(hue => ({
+        hues: hue.hues.map((h: { hue: number; weight: number }) => ({
+          hue: h.hue * 360 / 255,
+          weight: h.weight * 100 / 255
+        })),
+        timestamp: hue.timestamp
+      }))
     },
     setVideoCurrentTime(time: number) {
       this.videoCurrentTime = time;
