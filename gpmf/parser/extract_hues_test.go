@@ -63,22 +63,17 @@ func TestParseHueData(t *testing.T) {
 			FourCC: "STRM",
 			Children: []KLV{
 				{
-					FourCC: "HUES",
-					Children: []KLV{
-						{
-							FourCC:   "HUES",
-							DataType: int('B'),
-							Repeat:   3,
-							DataSize: 2,
-							Payload:  []byte{10, 20, 30, 40, 50, 60},
-						},
-						{
-							FourCC:   "TYPE",
-							DataType: int('c'),
-							DataSize: 2,
-							Payload:  []byte("BB"),
-						},
-					},
+					FourCC:   "HUES",
+					DataType: int('B'),
+					Repeat:   3,
+					DataSize: 2,
+					Payload:  []byte{10, 20, 30, 40, 50, 60},
+				},
+				{
+					FourCC:   "TYPE",
+					DataType: int('c'),
+					DataSize: 2,
+					Payload:  []byte("BB"),
 				},
 				{
 					FourCC:   "STNM",
