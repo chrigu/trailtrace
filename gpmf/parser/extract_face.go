@@ -58,14 +58,14 @@ func extractcFaceData(klv KLV) []Face {
 	}
 
 	faces := make([]Face, len(payloads))
-	for _, payload := range payloads {
+	for i, payload := range payloads {
 		rawValues, err := parseDynamicStructure(payload, format, repeat) // todo get from gopro, honor repeat
 		if err != nil {
 			internal.Log("Error parsing dynamic structure:", err)
 			continue
 		}
 
-		for i, values := range rawValues {
+		for _, values := range rawValues {
 			if len(values) < 9 {
 				internal.Log("Incomplete face data at index %d", i)
 				continue
