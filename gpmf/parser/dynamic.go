@@ -61,6 +61,14 @@ func parseDynamicStructure(data []byte, format string, repeat uint32) ([][]inter
 				value := data[offset]
 				values = append(values, interface{}(value))
 				offset += 1
+			case 'F': // 32-bit four character key -- FourCC
+				if offset+4 > totalSize {
+					internal.Log("Error: Not enough data for FourCC at position %d\n", i)
+					return nil, fmt.Errorf("Not enough data for FourCC at position %d", i)
+				}
+				value := string(data[offset : offset+4])
+				values = append(values, interface{}(value))
+				offset += 4
 			case 'l': // 32-bit signed integer
 				if offset+4 > totalSize {
 					internal.Log("Error: Not enough data for int32 at position %d\n", i)

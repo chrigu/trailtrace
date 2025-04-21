@@ -41,15 +41,16 @@ func processFile(this js.Value, args []js.Value) any {
 			buf := bytes.NewReader(byteSlice)
 
 			// Extract GPS data
-			gpsData, gyroData, faceData, lumaData, colorData := telemetry.ExtractTelemetryData(buf, false)
+			gpsData, gyroData, faceData, lumaData, colorData, sceneData := telemetry.ExtractTelemetryData(buf, false)
 
 			// Resolve the Promise with the GPS data
 			resolve.Invoke(map[string]interface{}{
-				"gpsData":  convertGPSToJS(gpsData),
-				"gyroData": convertGyroToJS(gyroData),
-				"faceData": convertFaceToJS(faceData),
-				"lumaData": convertLumaToJS(lumaData),
-				"hueData":  convertHuesToJS(colorData),
+				"gpsData":   convertGPSToJS(gpsData),
+				"gyroData":  convertGyroToJS(gyroData),
+				"faceData":  convertFaceToJS(faceData),
+				"lumaData":  convertLumaToJS(lumaData),
+				"hueData":   convertHuesToJS(colorData),
+				"sceneData": convertSceneToJS(sceneData),
 			})
 			return nil
 		}))
@@ -147,6 +148,18 @@ func convertHuesToJS(hueData []telemetry.TimedHue) js.Value {
 
 		// Add to the main array
 		jsArray.SetIndex(i, jsHue)
+	}
+	return jsArray
+}
+
+func convertSceneToJS(sceneData []telemetry.TimedScene) js.Value {
+	jsArray := js.Global().Get("Array").New(len(sceneData))
+	for i, scene := range sceneData {
+		jsScene := js.Global().Get("Object").New()
+		jsScene.Set("scene", string([]byte(scene.Scene.Type)))
+		jsScene.Set("probability", scene.Scene.Prob)
+		jsScene.Set("timestamp", scene.TimeStamp)
+		jsArray.SetIndex(i, jsScene)
 	}
 	return jsArray
 }

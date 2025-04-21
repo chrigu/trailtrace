@@ -56,6 +56,7 @@ onMounted(async () => {
       <GoProUpload class="mb-4" />
       <Luminance />
       <HueDisplay />
+      <SceneDisplay />
       <FaceBox v-if="store.videoUrl">
         <video ref="videoElement" :src="store.videoUrl" controls width="600" @timeupdate="updateCurrentTime"></video>
       </FaceBox>
@@ -75,5 +76,6 @@ onMounted(async () => {
     <p v-if="store.videoUrl">Current Face Data:<pre>{{ store.currentFaceData }}</pre></p>
     <p v-if="store.videoUrl">Current Luminance Data:<pre>{{ store.currentLuminanceData }}</pre></p>
     <p v-if="store.videoUrl">Current Hue Data:<pre>{{ store.currentHueData }}</pre></p>
+    <p v-if="store.videoUrl">Current Scene Data:<pre>{{ store.currentSceneData }}</pre></p>
   </section>
 </template>
