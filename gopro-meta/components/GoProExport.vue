@@ -3,6 +3,9 @@ import { ref } from "vue";
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { useStore } from "~/store";
+
+const store = useStore();
 
 const handleFile = async (event: Event) => {
   const input = event.target as HTMLInputElement;
@@ -52,6 +55,11 @@ const handleFile = async (event: Event) => {
       <div class="flex gap-2">
         <Input id="gpmffile" type="file" @change="handleFile" accept="video/mp4" />
       </div>
+    </div>
+    <div class="mt-4">
+      <Button @click="store.exportGpx" :disabled="!store.gpsData.length">
+        Export GPX Track
+      </Button>
     </div>
   </div>
 </template> 

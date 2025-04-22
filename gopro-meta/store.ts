@@ -137,6 +137,41 @@ export const useStore = defineStore('metaData', {
     setSceneData(data: SceneData[]) {
       this.sceneData = data;
     },
+    exportGpx() {
+      if (this.gpsData.length === 0) {
+        return null;
+      }
+
+      const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="GoPro Meta" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>GoPro Track</name>
+    <trkseg>
+      ${this.gpsData.map(point => `
+        <trkpt lat="${point.latitude}" lon="${point.longitude}">
+          <ele>${point.altitude}</ele>
+          <time>${new Date(point.timestamp).toISOString()}</time>
+        </trkpt>
+      `).join('')}
+    </trkseg>
+  </trk>
+</gpx>`;
+
+      // Create a blob from the GPX string
+      const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+      
+      // Create a download link
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'gopro_track.gpx';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
   },
 });
 
