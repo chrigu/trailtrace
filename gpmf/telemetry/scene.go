@@ -6,11 +6,11 @@ import (
 )
 
 type TimedScene struct {
-	parser.Scene
+	Scenes []parser.Scene
 	TimeSample
 }
 
-func AddTimestampsToSceneData(sceneData []parser.Scene, telemetryMetadata *mp4.TelemetryMetadata) []TimedScene {
+func AddTimestampsToSceneData(sceneData [][]parser.Scene, telemetryMetadata *mp4.TelemetryMetadata) []TimedScene {
 	var timedScenes []TimedScene
 	var sampleIndex uint32 = 0
 	var sampleScaleTime uint32 = 0
@@ -23,7 +23,7 @@ func AddTimestampsToSceneData(sceneData []parser.Scene, telemetryMetadata *mp4.T
 			}
 
 			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
-			timedScenes = append(timedScenes, TimedScene{Scene: sceneData[sampleIndex], TimeSample: TimeSample{TimeStamp: sampleTime}})
+			timedScenes = append(timedScenes, TimedScene{Scenes: sceneData[sampleIndex], TimeSample: TimeSample{TimeStamp: sampleTime}})
 			sampleIndex++
 			sampleScaleTime += timeToSample.SampleDelta
 		}

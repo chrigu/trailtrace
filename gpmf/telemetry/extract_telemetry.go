@@ -37,17 +37,12 @@ func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []Tim
 		flattenedLumaData = append(flattenedLumaData, lumaSlice...)
 	}
 
-	flattenedSceneData := make([]parser.Scene, 0)
-	for _, sceneSlice := range sceneData {
-		flattenedSceneData = append(flattenedSceneData, sceneSlice...)
-	}
-
 	// todo: refactor
 	timedGpsData := AddTimestampsToGPSData(flattenedGpsData, &telemetryMetadata)
 	timedGyroData := AddTimestampsToGyroDataWithDownsample(accData, &telemetryMetadata, 250)
 	timedFaceData := AddTimestampsToFaceData(faceData, &telemetryMetadata)
 	timedLumaData := AddTimestampsToLumaData(flattenedLumaData, &telemetryMetadata)
 	timedHueData := AddTimestampsToHueData(hueData, &telemetryMetadata)
-	timedSceneData := AddTimestampsToSceneData(flattenedSceneData, &telemetryMetadata)
+	timedSceneData := AddTimestampsToSceneData(sceneData, &telemetryMetadata)
 	return timedGpsData, timedGyroData, timedFaceData, timedLumaData, timedHueData, timedSceneData
 }

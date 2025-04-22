@@ -154,11 +154,18 @@ func convertHuesToJS(hueData []telemetry.TimedHue) js.Value {
 
 func convertSceneToJS(sceneData []telemetry.TimedScene) js.Value {
 	jsArray := js.Global().Get("Array").New(len(sceneData))
-	for i, scene := range sceneData {
+	for i, timedScene := range sceneData {
 		jsScene := js.Global().Get("Object").New()
-		jsScene.Set("scene", string([]byte(scene.Scene.Type)))
-		jsScene.Set("probability", scene.Scene.Prob)
-		jsScene.Set("timestamp", scene.TimeStamp)
+		// Create an array for all scenes
+		jsScenes := js.Global().Get("Array").New(len(timedScene.Scenes))
+		for j, scene := range timedScene.Scenes {
+			jsSceneObj := js.Global().Get("Object").New()
+			jsSceneObj.Set("type", string([]byte(scene.Type)))
+			jsSceneObj.Set("probability", scene.Prob)
+			jsScenes.SetIndex(j, jsSceneObj)
+		}
+		jsScene.Set("scenes", jsScenes)
+		jsScene.Set("timestamp", timedScene.TimeStamp)
 		jsArray.SetIndex(i, jsScene)
 	}
 	return jsArray

@@ -48,8 +48,10 @@ export interface ColorData {
 }
 
 export interface SceneData {
-  scene: string;
-  probability: number;
+  scenes: {
+    type: string;
+    probability: number;
+  }[];
   timestamp: number;
 }
 
