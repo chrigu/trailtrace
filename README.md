@@ -24,7 +24,9 @@ See `README.md` in the nuxt directory
 
 ## Todos
 
+- Refactor timed data, extraction
 - Move GPMF Parser to own project
+- Download GPX
 - Tests
 - Refactoring
 - Optimize performance https://goperf.dev/01-common-patterns/mem-prealloc/#why-preallocation-matters

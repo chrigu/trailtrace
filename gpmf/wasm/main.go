@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"syscall/js"
 
+	"gopro/mp4"
 	"gopro/telemetry"
 )
 
 func main() {
 	js.Global().Set("processFile", js.FuncOf(processFile))
+	js.Global().Set("exportGPMF", js.FuncOf(exportGPMF))
 	select {}
 }
 
@@ -160,7 +162,11 @@ func convertSceneToJS(sceneData []telemetry.TimedScene) js.Value {
 		jsScenes := js.Global().Get("Array").New(len(timedScene.Scenes))
 		for j, scene := range timedScene.Scenes {
 			jsSceneObj := js.Global().Get("Object").New()
-			jsSceneObj.Set("type", string([]byte(scene.Type)))
+			// Convert the FourCCScene to bytes and create a Uint8Array in JS
+			sceneBytes := []byte(scene.Type)
+			jsBytes := js.Global().Get("Uint8Array").New(len(sceneBytes))
+			js.CopyBytesToJS(jsBytes, sceneBytes)
+			jsSceneObj.Set("type", jsBytes)
 			jsSceneObj.Set("probability", scene.Prob)
 			jsScenes.SetIndex(j, jsSceneObj)
 		}
@@ -169,4 +175,57 @@ func convertSceneToJS(sceneData []telemetry.TimedScene) js.Value {
 		jsArray.SetIndex(i, jsScene)
 	}
 	return jsArray
+}
+
+func exportGPMF(this js.Value, args []js.Value) any {
+	if len(args) < 1 {
+		fmt.Println("Error: No file specified")
+		return js.Null()
+	}
+
+	file := args[0]
+
+	// Create a new Promise
+	promise := js.Global().Get("Promise").New(js.FuncOf(func(this js.Value, resolveArgs []js.Value) any {
+		resolve := resolveArgs[0]
+
+		// Use FileReader to read the content
+		fileReader := js.Global().Get("FileReader").New()
+		fileReader.Set("onload", js.FuncOf(func(this js.Value, p []js.Value) any {
+			data := p[0].Get("target").Get("result")
+			buffer := js.Global().Get("Uint8Array").New(data)
+
+			// Convert Uint8Array to Go byte slice
+			byteSlice := make([]byte, buffer.Length())
+			js.CopyBytesToGo(byteSlice, buffer)
+
+			fmt.Printf("Buffer Length: %d bytes\n", len(byteSlice))
+
+			// Create a bytes.Reader from the byte slice
+			buf := bytes.NewReader(byteSlice)
+
+			gpmfRaw, _ := mp4.ExtractTelemetryFromMp4(buf)
+			// if err != nil {
+			// 	fmt.Printf("Error extracting GPMF: %v\n", err)
+			// 	resolve.Invoke(js.Null())
+			// 	return nil
+			// }
+
+			// Create a new Uint8Array in JavaScript
+			jsGPMF := js.Global().Get("Uint8Array").New(len(gpmfRaw))
+			// Copy the GPMF data to the JavaScript Uint8Array
+			js.CopyBytesToJS(jsGPMF, gpmfRaw)
+
+			// Resolve the Promise with the GPMF data
+			resolve.Invoke(jsGPMF)
+			return nil
+		}))
+
+		// Read file as ArrayBuffer
+		fileReader.Call("readAsArrayBuffer", file)
+
+		return nil
+	}))
+
+	return promise
 }

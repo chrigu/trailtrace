@@ -69,13 +69,16 @@ onMounted(async () => {
       <AccelerationVisualizer />
     </div>
   </section>
+  <section class="mx-4" v-if="store.videoUrl">
+    <p>Current Playback Time: {{ formattedTime }}</p>
+    <p>Current GPS Data:<pre>{{ store.currentGpsData }}</pre></p>
+    <p>Current Acceleration Data:<pre>{{ store.currentAccelerationData }}</pre></p>
+    <p>Current Face Data:<pre>{{ store.currentFaceData }}</pre></p>
+    <p>Current Luminance Data:<pre>{{ store.currentLuminanceData }}</pre></p>
+    <p>Current Hue Data:<pre>{{ store.currentHueData }}</pre></p>
+    <p>Current Scene Data:<pre>{{ store.currentSceneData }}</pre></p>
+  </section>
   <section class="mx-4">
-    <p v-if="store.videoUrl">Current Playback Time: {{ formattedTime }}</p>
-    <p v-if="store.videoUrl">Current GPS Data:<pre>{{ store.currentGpsData }}</pre></p>
-    <p v-if="store.videoUrl">Current Acceleration Data:<pre>{{ store.currentAccelerationData }}</pre></p>
-    <p v-if="store.videoUrl">Current Face Data:<pre>{{ store.currentFaceData }}</pre></p>
-    <p v-if="store.videoUrl">Current Luminance Data:<pre>{{ store.currentLuminanceData }}</pre></p>
-    <p v-if="store.videoUrl">Current Hue Data:<pre>{{ store.currentHueData }}</pre></p>
-    <p v-if="store.videoUrl">Current Scene Data:<pre>{{ store.currentSceneData }}</pre></p>
+    <GoProExport />
   </section>
 </template>

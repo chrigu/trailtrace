@@ -49,7 +49,7 @@ export interface ColorData {
 
 export interface SceneData {
   scenes: {
-    type: string;
+    type: Uint8Array;
     probability: number;
   }[];
   timestamp: number;
