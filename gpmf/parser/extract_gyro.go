@@ -16,29 +16,28 @@ func ParseGyroscopeData(klvs []KLV) [][]Gyroscope {
 }
 
 func extractGyroscopeData(klv KLV) []Gyroscope {
-	// log("Processing STRM children", len(klv.Children))
 
 	var payload [][]int16
 	var scale []int16
 
 	for _, child := range klv.Children {
-		// log("Processing child:", child.FourCC)
 
 		switch child.FourCC {
 		case "GYRO":
-			//log("GYRO found")
 			payload = readPayload(child).([][]int16)
 
 		case "SCAL":
-			//log("SCAL found")
-			scal := readPayload(child).([][]int16)
-			if len(scal[0]) > 0 {
-				scale = scal[0]
+			extractedScale, err := extractScale[int16](child)
+			if err != nil {
+				return []Gyroscope{}
+			}
+			if s, ok := extractedScale.([]int16); ok {
+				scale = s
 			} else {
-				internal.Log("Error: ParsedData is not of type []int32")
+				internal.Log("Error: ParsedData is not of type []int16")
 			}
 		default:
-			//log("Unknown FourCC", klv.FourCC)
+			continue
 		}
 	}
 

@@ -17,7 +17,6 @@ func ParseHueData(klvs []KLV) [][]Hue {
 }
 
 func extractHueData(klv KLV) []Hue {
-	// log("Processing STRM children", len(klv.Children))
 
 	// todo: extract types dynamically
 	// todo: extract types dynamically
@@ -26,20 +25,17 @@ func extractHueData(klv KLV) []Hue {
 	var repeat uint32 = 0
 
 	for _, child := range klv.Children {
-		// log("Processing child:", child.FourCC)
 
 		switch child.FourCC {
 		case "HUES":
-			internal.Log("HUES found")
 			payload = child.Payload
 			repeat = child.Repeat
 
 		case "TYPE":
-			internal.Log("TYPE found")
 			format = readPayload(child).(string)
 
 		default:
-			//log("Unknown FourCC", klv.FourCC)
+			continue
 		}
 	}
 

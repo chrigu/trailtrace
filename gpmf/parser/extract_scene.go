@@ -28,24 +28,20 @@ func ParseSceneData(klvs []KLV) [][]Scene {
 
 func extractSceneData(klv KLV) []Scene {
 
-	// todo: extract types dynamically
 	var format string = ""
 	var payload []byte = make([]byte, 0)
 	var repeat uint32 = 0
 
 	for _, child := range klv.Children {
-		// log("Processing child:", child.FourCC)
 
 		switch child.FourCC {
 		case "SCEN":
-			internal.Log("SCEN found")
 			payload = child.Payload
 			repeat = child.Repeat
 		case "TYPE":
-			internal.Log("TYPE found")
 			format = readPayload(child).(string)
 		default:
-			//log("Unknown FourCC", klv.FourCC)
+			continue
 		}
 	}
 

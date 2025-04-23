@@ -17,7 +17,6 @@ func ParseFaceData(klvs []KLV) [][]Face {
 	return extractSensorData(klvs, "Face Coordinates and details", extractcFaceData)
 }
 
-// todo: handle tick tock data
 func extractcFaceData(klv KLV) []Face {
 	// struct ver,confidence %,ID,x,y,w,h,smile %, blink %
 	// maybe check structure and don't parse dynamic data. Use a struct instead
@@ -33,27 +32,25 @@ func extractcFaceData(klv KLV) []Face {
 	var repeat uint32 = 1
 
 	for _, child := range klv.Children {
-		// log("Processing child:", child.FourCC)
 		switch child.FourCC {
 		case "FACE":
-			internal.Log("FACE: found")
 			payloads = append(payloads, child.Payload)
 
 		case "TYPE":
-			internal.Log("FACE: TYPE found")
 			format = readPayload(child).(string)
 
 		case "SCAL":
-			internal.Log("FACE: SCAL found")
-			scal := readPayload(child).([][]uint16)
-			if len(scal) > 0 {
-				scale = scal
-			} else {
-				internal.Log("Error: ParsedData is not of type []unit16")
+			extractedScale, err := extractScale[uint16](child)
+			if err != nil {
+				return []Face{}
 			}
-			internal.Log("FACE: scale:", scale)
+			if s, ok := extractedScale.([][]uint16); ok {
+				scale = s
+			} else {
+				internal.Log("Error: ParsedData is not of type [][]uint16")
+			}
 		default:
-			//log("Unknown FourCC", klv.FourCC)
+			continue
 		}
 	}
 

@@ -39,14 +39,17 @@ func extractGpsData(klv KLV) []GPS9 {
 
 		case "SCAL":
 			internal.Log("SCAL found")
-			scal := readPayload(child).([][]int32)
-			if len(scal) > 0 {
-				scale = scal
+			extractedScale, err := extractScale[int32](child)
+			if err != nil {
+				return []GPS9{}
+			}
+			if s, ok := extractedScale.([][]int32); ok {
+				scale = s
 			} else {
-				internal.Log("Error: ParsedData is not of type []int32")
+				internal.Log("Error: ParsedData is not of type [][]int32")
 			}
 		default:
-			//log("Unknown FourCC", klv.FourCC)
+			continue
 		}
 	}
 

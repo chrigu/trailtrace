@@ -15,14 +15,13 @@ func extractLumaData(klv KLV) []Luma {
 	var payload [][]uint8
 
 	for _, child := range klv.Children {
-		// log("Processing child:", child.FourCC)
 
 		switch child.FourCC {
 		case "YAVG":
 			payload = readPayload(child).([][]uint8)
 
 		default:
-			//log("Unknown FourCC", klv.FourCC)
+			continue
 		}
 	}
 

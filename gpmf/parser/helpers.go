@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"gopro/internal"
 	"slices"
 	"strings"
 )
@@ -48,4 +49,23 @@ func extractSensorData[T any](klvs []KLV, sensorType string, extractFunc func(KL
 		}
 	}
 	return dataList
+}
+
+func extractScale[T int16 | int32 | uint16](child KLV) (any, error) {
+	scal, ok := readPayload(child).([][]T)
+	if !ok {
+		err := fmt.Errorf("failed to parse SCAL payload as [][]%T", *new(T))
+		internal.Log("Error: %v", err)
+		return nil, err
+	}
+	if len(scal) == 0 {
+		err := fmt.Errorf("no scale found")
+		internal.Log("Error: %v", err)
+		return nil, err
+	}
+	// Return either []T or [][]T depending on input structure
+	if len(scal) == 1 {
+		return scal[0], nil
+	}
+	return scal, nil
 }
