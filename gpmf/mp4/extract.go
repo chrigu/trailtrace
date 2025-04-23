@@ -5,6 +5,8 @@ import (
 	"io"
 	"strings"
 
+	"gopro/internal"
+
 	"github.com/abema/go-mp4"
 )
 
@@ -17,40 +19,55 @@ func ExtractTelemetryFromMp4(file io.ReadSeeker) ([]byte, TelemetryMetadata) {
 	// Extract metadata track from the MP4 file
 	metadataTrack, err = extractMetadataTrack(file)
 	if err != nil {
-		fmt.Println("Error extracting metadata track:", err)
+		internal.Log("Error extracting metadata track:", err)
 		return nil, telemetryMetadata
 	}
 
 	if metadataTrack == nil {
-		fmt.Println("No metadata track found")
+		internal.Log("No metadata track found")
 		return nil, telemetryMetadata
 	}
 
+	// extract Mdhd
 	mdhdBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMdhd()})
 	telemetryMetadata.TimeScale = mdhdBoxes[0].Payload.(*mp4.Mdhd).Timescale
 	telemetryMetadata.CreationTime = convertMP4TimeToUnixMs(mdhdBoxes[0].Payload.(*mp4.Mdhd).CreationTimeV0)
 
+	// extract Stco
 	stcoBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMinf(), mp4.BoxTypeStbl(), mp4.BoxTypeStco()})
+	if err != nil {
+		internal.Log("Error extracting Stco:", err)
+	}
 	for _, stcoBox := range stcoBoxes {
 		stcoBox := stcoBox.Payload.(*mp4.Stco)
 		telemetryMetadata.ChunkOffsets = stcoBox.ChunkOffset
 	}
 
+	// extract Stsz
 	stszBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMinf(), mp4.BoxTypeStbl(), mp4.BoxTypeStsz()})
+	if err != nil {
+		internal.Log("Error extracting Stsz:", err)
+	}
 	for _, stszBox := range stszBoxes {
 		stszBox := stszBox.Payload.(*mp4.Stsz)
 		telemetryMetadata.ChunkSizes = stszBox.EntrySize
 	}
 
-	// get Stsc
+	// extract Stsc
 	stscBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMinf(), mp4.BoxTypeStbl(), mp4.BoxTypeStsc()})
+	if err != nil {
+		internal.Log("Error extracting Stsc:", err)
+	}
 	for _, stscBox := range stscBoxes {
 		stscBox := stscBox.Payload.(*mp4.Stsc)
 		telemetryMetadata.SampleToChunks = stscBox.Entries
 	}
 
-	// get Stts
+	// extract Stts
 	sttsBoxes, err := mp4.ExtractBoxWithPayload(file, metadataTrack, mp4.BoxPath{mp4.BoxTypeMdia(), mp4.BoxTypeMinf(), mp4.BoxTypeStbl(), mp4.BoxTypeStts()})
+	if err != nil {
+		internal.Log("Error extracting Stts:", err)
+	}
 	for _, sttsBox := range sttsBoxes {
 		sttsBox := sttsBox.Payload.(*mp4.Stts)
 		telemetryMetadata.TimeToSamples = sttsBox.Entries
@@ -58,12 +75,15 @@ func ExtractTelemetryFromMp4(file io.ReadSeeker) ([]byte, TelemetryMetadata) {
 
 	// Read mdat size
 	mdatBoxes, err := mp4.ExtractBox(file, nil, mp4.BoxPath{mp4.BoxTypeMdat()})
-	//error handling
-	fmt.Println("Offset mdat", mdatBoxes[0].Offset, "Size mdat", mdatBoxes[0].Size)
+	if err != nil {
+		internal.Log("Error extracting mdat:", err)
+	}
+	internal.Log("Offset mdat", mdatBoxes[0].Offset, "Size mdat", mdatBoxes[0].Size)
 
-	//fmt.Println("Telemetry Metadata", telemetryMetadata.TimeScale, telemetryMetadata.TimeToSamples)
-
-	data, _ := readRawData(file, &telemetryMetadata)
+	data, err := readRawData(file, &telemetryMetadata)
+	if err != nil {
+		internal.Log("Error reading raw data:", err)
+	}
 
 	return data, telemetryMetadata
 }
@@ -113,13 +133,13 @@ func readRawData(file io.ReadSeeker, telemetryMetadata *TelemetryMetadata) ([]by
 
 		_, err := file.Seek(int64(offset), io.SeekStart)
 		if err != nil {
-			fmt.Printf("Error seeking at offset %d: %v\n", offset, err)
+			internal.Log("Error seeking at offset %d: %v\n", offset, err)
 			return nil, err
 		}
 
 		_, err = file.Read(buffer[bufferPos : bufferPos+chunkSize])
 		if err != nil {
-			fmt.Printf("Error reading at offset %d: %v\n", offset, err)
+			internal.Log("Error reading at offset %d: %v\n", offset, err)
 			return nil, err
 		}
 		bufferPos += chunkSize

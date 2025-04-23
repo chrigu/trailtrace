@@ -23,13 +23,12 @@ func main() {
 	defer file.Close()
 
 	// Extract metadata track from the MP4 file
-	gpsData, gyroData, faceData, _, _, sceneData := telemetry.ExtractTelemetryData(file, false)
+	gpsData, gyroData, faceData, lumaData, huesData, sceneData := telemetry.ExtractTelemetryData(file, false)
 
 	fmt.Printf("GPS Data: %v\n", gpsData)
 	fmt.Printf("Gyro Data: %v\n", gyroData)
 	fmt.Printf("Face Data: %v\n", faceData)
-	// fmt.Printf("Luma Data: %v\n", lumaData)
-	// fmt.Printf("Hues Data: %v\n", huesData)
+	fmt.Printf("Luma Data: %v\n", lumaData)
+	fmt.Printf("Hues Data: %v\n", huesData)
 	fmt.Printf("Scene Data: %v\n", sceneData)
-	// Test()
 }

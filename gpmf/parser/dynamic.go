@@ -9,18 +9,18 @@ import (
 )
 
 // parseDynamicStructure dynamically parses a buffer based on the format string
-func parseDynamicStructure(data []byte, format string, repeat uint32) ([][]interface{}, error) {
+func parseDynamicStructure(data []byte, format string, repeat uint32) ([][]any, error) {
 	internal.Log("Parsing dynamic structure with format:", format)
 	offset := 0
 	totalSize := len(data)
 
 	if totalSize == 0 {
 		internal.Log("Error: No data to parse")
-		return [][]interface{}{}, nil
+		return [][]any{}, nil
 	}
 
 	// Create a slice to store all repeated structures
-	allValues := make([][]interface{}, 0, repeat)
+	allValues := make([][]any, 0, repeat)
 
 	// Calculate the size of one structure
 	structureSize := 0
@@ -49,7 +49,7 @@ func parseDynamicStructure(data []byte, format string, repeat uint32) ([][]inter
 
 	// Parse the structure repeat times
 	for r := uint32(0); r < repeat; r++ {
-		values := make([]interface{}, 0, len(format))
+		values := make([]any, 0, len(format))
 
 		for i, char := range format {
 			switch char {
@@ -59,7 +59,7 @@ func parseDynamicStructure(data []byte, format string, repeat uint32) ([][]inter
 					return nil, fmt.Errorf("Not enough data for int8 at position %d", i)
 				}
 				value := data[offset]
-				values = append(values, interface{}(value))
+				values = append(values, value)
 				offset += 1
 			case 'F': // 32-bit four character key -- FourCC
 				if offset+4 > totalSize {
@@ -67,7 +67,7 @@ func parseDynamicStructure(data []byte, format string, repeat uint32) ([][]inter
 					return nil, fmt.Errorf("Not enough data for FourCC at position %d", i)
 				}
 				value := string(data[offset : offset+4])
-				values = append(values, interface{}(value))
+				values = append(values, value)
 				offset += 4
 			case 'l': // 32-bit signed integer
 				if offset+4 > totalSize {
@@ -75,7 +75,7 @@ func parseDynamicStructure(data []byte, format string, repeat uint32) ([][]inter
 					return nil, fmt.Errorf("Not enough data for int32 at position %d", i)
 				}
 				value := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
-				values = append(values, interface{}(value))
+				values = append(values, value)
 				offset += 4
 
 			case 'S': // 16-bit unsigned integer
@@ -84,7 +84,7 @@ func parseDynamicStructure(data []byte, format string, repeat uint32) ([][]inter
 					return nil, fmt.Errorf("Not enough data for uint16 at position %d", i)
 				}
 				value := binary.BigEndian.Uint16(data[offset : offset+2])
-				values = append(values, interface{}(value))
+				values = append(values, value)
 				offset += 2
 
 			case 'f': // 32-bit float
@@ -93,7 +93,7 @@ func parseDynamicStructure(data []byte, format string, repeat uint32) ([][]inter
 					return nil, fmt.Errorf("Not enough data for float32 at position %d", i)
 				}
 				value := math.Float32frombits(binary.BigEndian.Uint32(data[offset : offset+4]))
-				values = append(values, interface{}(value))
+				values = append(values, value)
 				offset += 4
 
 			default:
@@ -102,14 +102,6 @@ func parseDynamicStructure(data []byte, format string, repeat uint32) ([][]inter
 			}
 		}
 
-		// Calculate padding
-		// padding := (4 - (offset % 4)) % 4
-		// if padding > 0 && offset+int(padding) <= totalSize {
-		// 	internal.Log("Padding bytes: %d\n", padding)
-		// 	offset += int(padding)
-		// }
-
-		// Add this structure's values to the result
 		allValues = append(allValues, values)
 	}
 
