@@ -17,7 +17,7 @@ func AddTimestampsToFaceData(faceData [][]parser.Face, telemetryMetadata *mp4.Te
 	var sampleScaleTime uint32 = 0
 
 	for _, timeToSample := range telemetryMetadata.TimeToSamples {
-		for i := 0; i < int(timeToSample.SampleCount); i++ {
+		for range timeToSample.SampleCount {
 			if sampleIndex >= uint32(len(faceData)) {
 				break
 			}

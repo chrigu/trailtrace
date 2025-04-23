@@ -16,7 +16,7 @@ func AddTimestampsToLumaData(lumaData []parser.Luma, telemetryMetadata *mp4.Tele
 	var sampleScaleTime uint32 = 0
 
 	for _, timeToSample := range telemetryMetadata.TimeToSamples {
-		for i := 0; i < int(timeToSample.SampleCount); i++ {
+		for range timeToSample.SampleCount {
 
 			if sampleIndex >= uint32(len(lumaData)) {
 				break

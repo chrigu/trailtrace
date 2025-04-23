@@ -67,10 +67,7 @@ func readKLV(data []byte, offset uint32, klvs *[]KLV) uint32 {
 	totalSize := klv.DataSize * klv.Repeat
 	padding := (4 - (totalSize % 4)) % 4
 
-	//fmt.Println("FourCC:", klv.FourCC, "DataType:", klv.DataType, "DataSize:", klv.DataSize, "Repeat:", klv.Repeat, "Padding:", padding)
-
 	// Process nested KLV structures
-
 	if klv.DataType == 0 {
 		nestedOffset := uint32(0) + padding
 
