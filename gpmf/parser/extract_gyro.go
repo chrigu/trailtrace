@@ -35,6 +35,7 @@ func extractGyroscopeData(klv KLV) []Gyroscope {
 				scale = s
 			} else {
 				internal.Log("Error: ParsedData is not of type []int16")
+				return []Gyroscope{}
 			}
 		default:
 			continue

@@ -48,6 +48,7 @@ func extractcFaceData(klv KLV) []Face {
 				scale = s
 			} else {
 				internal.Log("Error: ParsedData is not of type [][]uint16")
+				return []Face{}
 			}
 		default:
 			continue

@@ -47,6 +47,7 @@ func extractGpsData(klv KLV) []GPS9 {
 				scale = s
 			} else {
 				internal.Log("Error: ParsedData is not of type [][]int32")
+				return []GPS9{}
 			}
 		default:
 			continue
