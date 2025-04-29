@@ -163,10 +163,7 @@ func convertSceneToJS(sceneData []telemetry.TimedScene) js.Value {
 		for j, scene := range timedScene.Scenes {
 			jsSceneObj := js.Global().Get("Object").New()
 			// Convert the FourCCScene to bytes and create a Uint8Array in JS
-			sceneBytes := []byte(scene.Type)
-			jsBytes := js.Global().Get("Uint8Array").New(len(sceneBytes))
-			js.CopyBytesToJS(jsBytes, sceneBytes)
-			jsSceneObj.Set("type", jsBytes)
+			jsSceneObj.Set("type", string(scene.Type))
 			jsSceneObj.Set("probability", scene.Prob)
 			jsScenes.SetIndex(j, jsSceneObj)
 		}
