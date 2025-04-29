@@ -1,6 +1,12 @@
-# GoPro GPS Display / GPMF Parser
+# GoPro Metadata Display / GPMF Parser
 
-Displays Gopro's GPS data on a map.
+Displays Gopro's  metadata like:
+- 🌍 GPS
+- 🚀 Acceleration
+- ☀️ Luminance
+- 🎨 Hue
+- 😀 Face
+- 🎬 Scene
 
 There are two sub-projects
 
@@ -24,6 +30,8 @@ See `README.md` in the nuxt directory
 
 ## Todos
 
+- Design
+- Fix Accleration display
 - Refactor timed data, extraction
 - Move GPMF Parser to own project
 - Test older GoPros

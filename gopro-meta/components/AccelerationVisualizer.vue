@@ -9,7 +9,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 const store = useStore()
 
 const chartData = computed(() => ({
-  labels: store.accelerationData.map(d => d.timestamp),
+  labels: store.accelerationData.map(d => (d.timestamp - store.accelerationData[0].timestamp)/1000),
   datasets: [
     {
       label: 'X',
@@ -42,10 +42,16 @@ const chartOptions = {
     y: {
       title: {
         display: true,
-        text: 'G-force'
+        text: 'm/s^2'
       },
       ticks: {
-        callback: (value) => `${value.toFixed(2)}g`
+        callback: (value) => `${value.toFixed(2)}`
+      }
+    },
+    x: {
+      title: {
+        display: true,
+        text: 'Time',
       }
     }
   }
