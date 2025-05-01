@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { useStore, type GpsData } from "~/store";
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,6 +25,7 @@ const handleFile = async (event: Event) => {
   if (window.processFile) {
     try {
       const metadata = await window.processFile(file) as {gpsData: GpsData[], gyroData: any[], faceData: any[], lumaData: any[], hueData: any[], sceneData: any[]};
+      // refactor this
       console.log("Metadata data:", metadata);
       store.setGpsData(metadata.gpsData);
       store.setGyroData(metadata.gyroData);
@@ -48,7 +48,7 @@ const handleFile = async (event: Event) => {
   <div>
     <div class="flex flex-row justify-between">
       <Label for="videofile">GoPro file</Label>
-      <Input id="videofile" type="file" @change="handleFile" accept="video/mp4" />
+      <Input id="videofile" type="file" @change="handleFile" accept="video/mp4" class="bg-pink-500 hover:bg-pink-600 font-sans" />
     </div>
   </div>
 </template>

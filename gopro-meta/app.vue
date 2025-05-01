@@ -27,6 +27,12 @@ const loadWasmExec = async () => {
   });
 };
 
+useHead({
+  bodyAttrs: {
+    class: "bg-stone-100"
+  }
+})
+
 // Load wasm_exec.js and WebAssembly
 onMounted(async () => {
   try {
@@ -48,25 +54,22 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="mb-8 p-4">
-    <h1>TrackBack</h1>
+  <section class="mb-8 p-4 bg-gray-900 flex flex-row justify-between">
+    <h1 class="text-pink-500 font-display text-4xl">GoGoPro</h1>
+    <GoProUpload class="mb-4" />
   </section>
   <section class="mx-4 flex flex-row gap-x-4">
     <div>
-      <GoProUpload class="mb-4" />
-      <Luminance />
-      <HueDisplay />
-      <SceneDisplay />
       <FaceBox v-if="store.videoUrl">
         <video ref="videoElement" :src="store.videoUrl" controls width="600" @timeupdate="updateCurrentTime"></video>
       </FaceBox>
-      <p v-if="store.videoUrl">Current Playback Time: {{ formattedTime }}</p>
-      <p v-if="store.videoUrl">Current GPS Data:<pre>{{ store.currentGpsData }}</pre></p>
-      <p v-if="store.videoUrl">Current Acceleration Data:<pre>{{ store.currentAccelerationData }}</pre></p>
     </div>
     <div class="h-[600px] flex-1">
       <Map />
       <AccelerationVisualizer />
+      <Luminance />
+      <HueDisplay />
+      <SceneDisplay />
     </div>
   </section>
   <section class="mx-4" v-if="store.videoUrl">
@@ -77,6 +80,9 @@ onMounted(async () => {
     <p>Current Luminance Data:<pre>{{ store.currentLuminanceData }}</pre></p>
     <p>Current Hue Data:<pre>{{ store.currentHueData }}</pre></p>
     <p>Current Scene Data:<pre>{{ store.currentSceneData }}</pre></p>
+    <p>Current Playback Time: {{ formattedTime }}</p>
+    <p>Current GPS Data:<pre>{{ store.currentGpsData }}</pre></p>
+    <p>Current Acceleration Data:<pre>{{ store.currentAccelerationData }}</pre></p>
   </section>
   <section class="mx-4">
     <GoProExport />

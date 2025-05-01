@@ -40,7 +40,7 @@ See `README.md` in the nuxt directory
 - Refactoring
 - Optimize performance https://goperf.dev/01-common-patterns/mem-prealloc/#why-preallocation-matters
 
-## Ressources
+## Resources
 - https://github.com/gopro/gpmf-parser
 - https://www.trekview.org/blog/injecting-camm-gpmd-telemetry-videos-part-3-mp4-structure-telemetry-trak/
 - https://developer.apple.com/documentation/quicktime-file-format/sample-to-chunk_atom/sample-to-chunk_table
