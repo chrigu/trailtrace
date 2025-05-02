@@ -59,17 +59,35 @@ onMounted(async () => {
     <GoProUpload class="mb-4" />
   </section>
   <section class="mx-4 flex flex-row gap-x-4">
-    <div>
+    <div class="flex-1">
       <FaceBox v-if="store.videoUrl">
-        <video ref="videoElement" :src="store.videoUrl" controls width="600" @timeupdate="updateCurrentTime"></video>
+        <video ref="videoElement" :src="store.videoUrl" controls @timeupdate="updateCurrentTime"></video>
       </FaceBox>
     </div>
-    <div class="h-[600px] flex-1">
-      <Map />
-      <AccelerationVisualizer />
-      <Luminance />
-      <HueDisplay />
-      <SceneDisplay />
+    <div class="flex-1">
+      <div v-if="store.videoUrl">
+        <section v-if="store.showMap">
+          <h2>GPS</h2>
+          <Map />
+          <GoProExport />
+        </section>
+        <section>
+          <h2>Acceleration</h2>
+          <AccelerationVisualizer />
+        </section>
+        <section>
+          <h2>Luminance</h2>
+          <Luminance />
+        </section>
+        <section>
+          <h2>Hue</h2>
+          <HueDisplay />
+        </section>
+        <section>
+          <h2>Scene</h2>
+          <SceneDisplay />
+        </section>
+      </div>
     </div>
   </section>
   <section class="mx-4" v-if="store.videoUrl">
@@ -83,8 +101,5 @@ onMounted(async () => {
     <p>Current Playback Time: {{ formattedTime }}</p>
     <p>Current GPS Data:<pre>{{ store.currentGpsData }}</pre></p>
     <p>Current Acceleration Data:<pre>{{ store.currentAccelerationData }}</pre></p>
-  </section>
-  <section class="mx-4">
-    <GoProExport />
   </section>
 </template>
