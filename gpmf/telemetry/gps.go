@@ -10,10 +10,10 @@ type TimedGPS struct {
 	TimeSample
 }
 
-func AddTimestampsToGPSData(gpsData []parser.GPS9, telemetryMetadata *mp4.TelemetryMetadata) []TimedGPS {
+func AddTimestampsToGPSData(gpsData [][]parser.GPS9, telemetryMetadata *mp4.TelemetryMetadata) []TimedGPS {
 	var timedGPSs []TimedGPS
 	var sampleIndex uint32 = 0
-	var sampleScaleTime uint32 = 0
+	var baseSampleScaleTime uint32 = 0
 
 	for _, timeToSample := range telemetryMetadata.TimeToSamples {
 		for range timeToSample.SampleCount {
@@ -21,10 +21,15 @@ func AddTimestampsToGPSData(gpsData []parser.GPS9, telemetryMetadata *mp4.Teleme
 				break
 			}
 
-			sampleTime := telemetryMetadata.CreationTime + int64(sampleScaleTime*1000/telemetryMetadata.TimeScale)
-			timedGPSs = append(timedGPSs, TimedGPS{GPS9: gpsData[sampleIndex], TimeSample: TimeSample{TimeStamp: sampleTime}})
+			for i, gps := range gpsData[sampleIndex] {
+				// Calculate time delta relative to the start of this time-to-sample entry
+				scaledTimeDelta := float64(i) / float64(len(gpsData[sampleIndex])) * float64(timeToSample.SampleDelta)
+				timeDelta := float64(baseSampleScaleTime+uint32(scaledTimeDelta)) * 1000.0 / float64(telemetryMetadata.TimeScale)
+				sampleTime := telemetryMetadata.CreationTime + int64(timeDelta)
+				timedGPSs = append(timedGPSs, TimedGPS{GPS9: gps, TimeSample: TimeSample{TimeStamp: sampleTime}})
+			}
 			sampleIndex++
-			sampleScaleTime += timeToSample.SampleDelta
+			baseSampleScaleTime += timeToSample.SampleDelta
 		}
 	}
 

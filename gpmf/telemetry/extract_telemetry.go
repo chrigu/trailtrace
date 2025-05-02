@@ -27,10 +27,10 @@ func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []Tim
 	fmt.Println("GPS9 data:", len(gpsData), "Gyro data:", len(gyroData), "Acc data:", len(accData), "Face data:", len(faceData), "luma data:", len(lumaData), "hue data:", len(hueData), "scene data:", len(sceneData))
 
 	// refactor
-	flattenedGpsData := make([]parser.GPS9, 0)
-	for _, gpsSlice := range gpsData {
-		flattenedGpsData = append(flattenedGpsData, gpsSlice...)
-	}
+	// flattenedGpsData := make([]parser.GPS9, 0)
+	// for _, gpsSlice := range gpsData {
+	// 	flattenedGpsData = append(flattenedGpsData, gpsSlice...)
+	// }
 
 	flattenedLumaData := make([]parser.Luma, 0)
 	for _, lumaSlice := range lumaData {
@@ -38,7 +38,7 @@ func ExtractTelemetryData(file io.ReadSeeker, printTree bool) ([]TimedGPS, []Tim
 	}
 
 	// todo: refactor
-	timedGpsData := AddTimestampsToGPSData(flattenedGpsData, &telemetryMetadata)
+	timedGpsData := AddTimestampsToGPSData(gpsData, &telemetryMetadata)
 	timedGyroData := AddTimestampsToGyroDataWithDownsample(accData, &telemetryMetadata, 250)
 	timedFaceData := AddTimestampsToFaceData(faceData, &telemetryMetadata)
 	timedLumaData := AddTimestampsToLumaData(flattenedLumaData, &telemetryMetadata)
