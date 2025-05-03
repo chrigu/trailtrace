@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@nuxtjs/leaflet": "1.2.6",
+    "@nuxtjs/tailwindcss": "^6.13.2",
     "@pinia/nuxt": "0.10.1",
     "@unovis/ts": "^1.5.1",
     "@unovis/vue": "^1.5.1",
@@ -30,6 +31,5 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@nuxtjs/tailwindcss": "^6.13.2"
   }
 }

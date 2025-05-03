@@ -8,5 +8,15 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/tailwindcss',
     'shadcn-nuxt',
-  ]
+  ],
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap',
+        },
+      ],
+    },
+  },
 })
