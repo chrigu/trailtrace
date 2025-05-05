@@ -65,6 +65,7 @@ export const useStore = defineStore('metaData', {
     sceneData: [] as SceneData[],
     videoCurrentTime: 0,
     videoUrl: '',
+    videoDuration: 0,
   }),
   
   getters: {
@@ -137,6 +138,9 @@ export const useStore = defineStore('metaData', {
     },
     setVideoUrl(url: string) {
       this.videoUrl = url;
+    },
+    setVideoDuration(duration: number) {
+      this.videoDuration = duration;
     },
     setSceneData(data: SceneData[]) {
       this.sceneData = data;

@@ -60,30 +60,45 @@ onMounted(async () => {
   }
 });
 
-// Connect video element to VideoControls
-watch(videoElement, (newVideoElement) => {
-  if (newVideoElement && videoControls.value) {
-    videoControls.value.videoElement = newVideoElement;
-  }
-});
+watch(
+  () => [videoElement.value, videoControls.value],
+  ([videoEl, controls]) => {
+    if (videoEl && controls) {
+      controls.videoElement = videoEl;
+    }
+  },
+  { immediate: true }
+);
+
 </script>
 
 <template>
-  <section class="mb-0 p-4 bg-gray-900 flex flex-row justify-between">
+  <section class="mb-0 p-4 bg-gray-900 flex flex-col md:flex-row justify-between">
     <h1 class="text-pink-500 font-sans font-bold text-4xl">GoGoPro</h1>
     <GoProUpload class="mb-4" />
   </section>
   <section class="mb-8">
     <VideoControls ref="videoControls" v-if="store.videoUrl" />
   </section>
-  <section class="mx-4 flex flex-row gap-x-4">
+  <section class="mx-4 flex flex-col lg:flex-row gap-x-4 h-[calc(100vh-200px)]">
     <div class="flex-1">
+      <div v-show="store.videoUrl">
+      <section>
+        <SceneDisplay />
+      </section>
       <FaceBox>
-        <video ref="videoElement" :src="store.videoUrl" @timeupdate="updateCurrentTime"></video>
+        <video ref="videoElement" :src="store.videoUrl" controls @timeupdate="updateCurrentTime"></video>
       </FaceBox>
+        <section>
+          <Luminance />
+        </section>
+        <section>
+          <HueDisplay />
+        </section>
+      </div>
     </div>
-    <div class="flex-1">
-      <div v-if="store.videoUrl">
+    <div class="flex-1 overflow-y-auto" v-if="store.videoUrl">
+      <div>
         <section v-if="store.showMap">
           <h2>GPS</h2>
           <Map />
@@ -92,18 +107,6 @@ watch(videoElement, (newVideoElement) => {
         <section>
           <h2>Acceleration</h2>
           <AccelerationVisualizer />
-        </section>
-        <section>
-          <h2>Luminance</h2>
-          <Luminance />
-        </section>
-        <section>
-          <h2>Hue</h2>
-          <HueDisplay />
-        </section>
-        <section>
-          <h2>Scene</h2>
-          <SceneDisplay />
         </section>
       </div>
     </div>

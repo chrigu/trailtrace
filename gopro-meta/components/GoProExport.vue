@@ -50,12 +50,12 @@ const handleFile = async (event: Event) => {
 
 <template>
   <div>
-    <div class="flex flex-row justify-between items-center gap-4">
+    <!-- div class="flex flex-row justify-between items-center gap-4">
       <Label for="gpmffile">Export GPMF Data</Label>
       <div class="flex gap-2">
         <Input id="gpmffile" type="file" @change="handleFile" accept="video/mp4" />
       </div>
-    </div>
+    </div-->
     <div class="mt-4">
       <Button @click="store.exportGpx" :disabled="!store.gpsData.length">
         Export GPX Track
