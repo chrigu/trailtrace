@@ -5,6 +5,7 @@ import { useStore } from '~/store'
 const store = useStore()
 const isPlaying = ref(false)
 const videoElement = ref<HTMLVideoElement | null>(null)
+const progressBar = ref<HTMLElement | null>(null)
 
 const progressPercentage = computed(() => {
   if (store.videoDuration === 0) return 0
@@ -27,7 +28,8 @@ const handleProgressClick = (event: MouseEvent) => {
   console.log(videoElement.value)
   if (!videoElement.value) return
   
-  const rect = (event.target as HTMLElement).getBoundingClientRect()
+  const rect = progressBar.value?.getBoundingClientRect()
+  if (!rect) return
   const x = event.clientX - rect.left
   const percentage = x / rect.width
   const newTime = percentage * store.videoDuration
@@ -50,7 +52,7 @@ defineExpose({
 
 <template>
   <div>
-    <div class="relative h-5 bg-gray-300 my-0 cursor-pointer" @click="handleProgressClick">
+    <div ref="progressBar" class="relative h-5 bg-gray-300 my-0 cursor-pointer" @click="handleProgressClick">
       <div 
         class="absolute h-full bg-blue-500 transition-[width] duration-100 ease-linear"
         :style="{ width: progressPercentage + '%' }"
