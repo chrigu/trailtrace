@@ -73,12 +73,15 @@ watch(
 </script>
 
 <template>
-  <section class="mb-0 p-4 bg-gray-900 flex flex-col md:flex-row justify-between">
-    <h1 class="text-pink-500 font-sans font-bold text-4xl">GoGoPro</h1>
-    <GoProUpload class="mb-4" />
+  <section class="mb-0 p-4 bg-gray-700 flex flex-col md:flex-row justify-between">
+    <h1 class="text-sky-500 font-sans font-bold text-4xl">GoGoPro</h1>
+    <UploadButton v-if="store.videoUrl" />
   </section>
   <section class="mb-8">
     <VideoControls ref="videoControls" v-if="store.videoUrl" />
+  </section>
+  <section v-if="!store.videoUrl">
+    <FileDrop class="mb-4" />
   </section>
   <section class="mx-4 flex flex-col lg:flex-row gap-x-4 h-[calc(100vh-200px)]">
     <div class="flex-1">
@@ -97,7 +100,7 @@ watch(
         </section>
       </div>
     </div>
-    <div class="flex-1 overflow-y-auto" v-if="store.videoUrl">
+    <div class="flex-1" v-if="store.videoUrl">
       <div>
         <section v-if="store.showMap">
           <h2>GPS</h2>
