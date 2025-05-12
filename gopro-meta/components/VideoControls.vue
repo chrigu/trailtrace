@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useStore } from '~/store'
+import { Button } from '@/components/ui/button'
+import { Play, Pause } from 'lucide-vue-next'
 
 const store = useStore()
 const isPlaying = ref(false)
@@ -54,32 +56,18 @@ defineExpose({
   <div>
     <div ref="progressBar" class="relative h-5 bg-gray-300 my-0 cursor-pointer" @click="handleProgressClick">
       <div 
-        class="absolute h-full bg-blue-500 transition-[width] duration-100 ease-linear"
+        class="absolute h-full bg-sky-500 transition-[width] duration-100 ease-linear"
         :style="{ width: progressPercentage + '%' }"
       ></div>
       <div class="absolute right-4 top-1/2 -translate-y-1/2">
         {{ formatTime(store.videoCurrentTime) }} / {{ formatTime(store.videoDuration) }}
       </div>
     </div>
-    <div class="flex gap-4 mt-3">
-      <button @click="playPause">{{ isPlaying ? 'Pause' : 'Play' }}</button>
+    <div class="mt-4 flex justify-center">
+      <Button variant="outline" size="icon" @click="playPause">
+        <Play v-if="!isPlaying" />
+        <Pause v-else />
+      </Button>
     </div>
   </div>
 </template>
-
-<style scoped>
-
-
-button {
-  padding: 8px 16px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #45a049;
-}
-</style>

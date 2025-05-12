@@ -4,7 +4,6 @@ import { useStore } from "~/store";
 import VideoControls from './components/VideoControls.vue'
 
 let go;
-let wasmInstance;
 const store = useStore();
 const videoElement = ref<HTMLVideoElement | null>(null);
 const videoControls = ref<InstanceType<typeof VideoControls> | null>(null);
@@ -45,7 +44,6 @@ onMounted(async () => {
     const wasmBytes = await wasmResponse.arrayBuffer();
     const { instance } = await WebAssembly.instantiate(wasmBytes, go.importObject);
     go.run(instance);
-    wasmInstance = instance;
   } catch (error) {
     console.error("Error loading WebAssembly:", error);
   }
@@ -89,11 +87,11 @@ watch(
       <section>
         <SceneDisplay />
       </section>
-      <FaceBox>
+      <FaceBox class="mb-4">
         <video ref="videoElement" :src="store.videoUrl" controls @timeupdate="updateCurrentTime"></video>
       </FaceBox>
         <section>
-          <Luminance />
+          <Luminance class="mb-4"/>
         </section>
         <section>
           <HueDisplay />
@@ -102,7 +100,7 @@ watch(
     </div>
     <div class="flex-1" v-if="store.videoUrl">
       <div>
-        <section v-if="store.showMap">
+        <section v-if="store.showMap" class="mb-4">
           <h2>GPS</h2>
           <Map />
           <GoProExport />
