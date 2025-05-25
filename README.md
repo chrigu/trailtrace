@@ -15,14 +15,9 @@ There are two sub-projects
 
 ## GPMF Parser
 
-All commands are run from the `gpmf` directory
+Moded to https://github.com/chrigu/go-gpmf
 
-### Run cli 
-`go run ./cli <mp4 file>`
-
-### Compile to WASM
-
-`GOOS=js GOARCH=wasm go build -o wasm/main.wasm ./wasm`
+Use generated wasm file in this project.
 
 ## Nuxt
 
@@ -33,7 +28,6 @@ See `README.md` in the nuxt directory
 - Design
 - Fix Accleration display
 - Refactor timed data, extraction
-- Move GPMF Parser to own project
 - Test older GoPros
 - Select metadata to export
 - Tests
