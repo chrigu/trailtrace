@@ -41,7 +41,7 @@ const handleDrop = (event: DragEvent) => {
     <div 
       class="border-2 border-dashed rounded-lg p-6 text-center transition-colors"
       :class="[
-        isDragging ? 'border-sky-500 bg-sky-50' : 'border-gray-300 hover:border-sky-400',
+        isDragging ? 'border-sky-700 bg-sky-50' : 'border-gray-300 hover:border-sky-400',
         'cursor-pointer'
       ]"
       @dragover="handleDragOver"
@@ -49,12 +49,12 @@ const handleDrop = (event: DragEvent) => {
       @drop="handleDrop"
     >
       <div class="space-y-4">
-        <div class="text-gray-600">
+        <div class="text-gray-500">
           <p class="text-lg font-medium">Drag and drop your GoPro file here</p>
           <p class="text-sm">or</p>
         </div>
         <div class="flex flex-row justify-center items-center gap-4">
-          <Label for="videofile" class="cursor-pointer">Select a file</Label>
+          <Label for="videofile" class="cursor-pointer text-gray-500">Select a file</Label>
           <Input 
             id="videofile" 
             type="file" 

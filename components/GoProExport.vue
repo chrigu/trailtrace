@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { useStore } from "~/store";
 
@@ -50,12 +47,12 @@ const handleFile = async (event: Event) => {
 
 <template>
   <div>
-    <!-- div class="flex flex-row justify-between items-center gap-4">
+    <div class="flex flex-row justify-between items-center gap-4">
       <Label for="gpmffile">Export GPMF Data</Label>
       <div class="flex gap-2">
         <Input id="gpmffile" type="file" @change="handleFile" accept="video/mp4" />
       </div>
-    </div-->
+    </div>
     <div class="mt-4">
       <Button @click="store.exportGpx" :disabled="!store.gpsData.length">
         Export GPX Track

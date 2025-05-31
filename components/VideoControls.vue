@@ -56,7 +56,7 @@ defineExpose({
   <div>
     <div ref="progressBar" class="relative h-5 bg-gray-300 my-0 cursor-pointer" @click="handleProgressClick">
       <div 
-        class="absolute h-full bg-sky-500 transition-[width] duration-100 ease-linear"
+        class="absolute h-full bg-sky-700 transition-[width] duration-100 ease-linear"
         :style="{ width: progressPercentage + '%' }"
       ></div>
       <div class="absolute right-4 top-1/2 -translate-y-1/2">
