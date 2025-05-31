@@ -1,4 +1,4 @@
-# GoPro Metadata Display / GPMF Parser
+# GoPro Metadata Display
 
 Displays Gopro's  metadata like:
 - 🌍 GPS
@@ -8,33 +8,84 @@ Displays Gopro's  metadata like:
 - 😀 Face
 - 🎬 Scene
 
-There are two sub-projects
-
-1. Go project for the GoPro Metadata parser (GPMF Parser) that can be complied to WASM
-2. Nuxt project for displaying the data
+Other features:
+- 💾 Extract GPMF data
+- 🛰️ Extract GPX data
 
 ## GPMF Parser
 
-Moded to https://github.com/chrigu/go-gpmf
-
-Use generated wasm file in this project.
+Uses wasm file from https://github.com/chrigu/go-gpmf
 
 ## Nuxt
 
-See `README.md` in the nuxt directory
+### Setup
 
-## Todos
+Make sure to install dependencies:
 
-- Design
-- Fix Accleration display
-- Refactor timed data, extraction
-- Test older GoPros
-- Select metadata to export
-- Tests
-- Refactoring
-- Optimize performance https://goperf.dev/01-common-patterns/mem-prealloc/#why-preallocation-matters
+```bash
+# npm
+npm install
 
-## Resources
-- https://github.com/gopro/gpmf-parser
-- https://www.trekview.org/blog/injecting-camm-gpmd-telemetry-videos-part-3-mp4-structure-telemetry-trak/
-- https://developer.apple.com/documentation/quicktime-file-format/sample-to-chunk_atom/sample-to-chunk_table
+# pnpm
+pnpm install
+
+# yarn
+yarn install
+
+# bun
+bun install
+```
+
+### Development Server
+
+Start the development server on `http://localhost:3000`:
+
+```bash
+# npm
+npm run dev
+
+# pnpm
+pnpm dev
+
+# yarn
+yarn dev
+
+# bun
+bun run dev
+```
+
+### Production
+
+Build the application for production:
+
+```bash
+# npm
+npm run build
+
+# pnpm
+pnpm build
+
+# yarn
+yarn build
+
+# bun
+bun run build
+```
+
+Locally preview production build:
+
+```bash
+# npm
+npm run preview
+
+# pnpm
+pnpm preview
+
+# yarn
+yarn preview
+
+# bun
+bun run preview
+```
+
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
