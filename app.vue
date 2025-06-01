@@ -70,7 +70,7 @@ watch(
 
 <template>
   <section class="mb-0 p-4 flex flex-col md:flex-row justify-between">
-    <h1 class="text-sky-700 font-sans font-bold text-2xl">GoPro Metadata</h1>
+    <h1 class="text-sky-700 font-roboto-title font-bold text-2xl">GoPro Metadata</h1>
     <Transition name="fade">
       <UploadButton v-if="store.videoUrl"/>
     </Transition>
@@ -82,7 +82,7 @@ watch(
   </section> -->
   <section v-if="!store.videoUrl" class="p-4 flex flex-row items-stretch justify-center h-full gap-x-8">
     <div class="flex-1 flex flex-col">
-      <h2 class="max-w-2xl mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl">What is this?</h2>
+      <h2 class="max-w-2xl mb-4 text-4xl font-roboto-title font-bold leading-none tracking-tight md:text-5xl">What is this?</h2>
       <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
         GoPro Metadata is a tool that allows you to extract and display metadata from GoPro videos.
         It can extract GPMF data in a binary format and export GPS data as GPX.
@@ -96,31 +96,32 @@ watch(
     </div>
   </section>
   <section class="mx-4 flex flex-col lg:flex-row gap-x-4 h-[calc(100vh-200px)]">
-    <div class="flex-1">
+    <div class="flex-1 flex items-center justify-center">
       <div v-show="store.videoUrl">
       <FaceBox class="mb-4">
         <video ref="videoElement" :src="store.videoUrl" controls @timeupdate="updateCurrentTime"></video>
       </FaceBox>
-      <section>
-        <SceneDisplay />
-      </section>
       <GoProExport />
       </div>
     </div>
     <div class="flex-1 h-full" v-if="store.videoUrl">
       <div class="h-full overflow-y-auto pr-4">
-        <section v-if="store.showMap" class="mb-4">
-          <h2>GPS</h2>
+        <section v-if="store.showMap" class="mb-8">
+          <h2 class="font-roboto-title font-bold">GPS</h2>
           <Map />
         </section>
-        <section>
-          <h2>Acceleration</h2>
+        <section class="mb-8">
+          <h2 class="font-roboto-title font-bold">Scene</h2>
+          <SceneDisplay />
+        </section>
+        <section class="mb-8">
+          <h2 class="font-roboto-title font-bold">Acceleration</h2>
           <AccelerationVisualizer />
         </section>
-        <section>
+        <section class="mb-8">
           <HueDisplay />
         </section>
-        <section>
+        <section class="mb-8">
           <Luminance class="mb-4"/>
         </section>
         <section class="mb-4">

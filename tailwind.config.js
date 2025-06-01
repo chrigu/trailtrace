@@ -52,8 +52,7 @@ export default {
   			}
   		},
 			fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Inter', 'sans-serif'],
+        'roboto-title': ['Roboto', 'sans-serif'],
       }
   	}
   },
