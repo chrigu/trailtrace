@@ -3,16 +3,18 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ref } from 'vue'
-import { useProcessGoproFile } from '../composables'
+
+
+const emit = defineEmits(['file-selected'])
 
 const isDragging = ref(false)
 
-const { processFile } = useProcessGoproFile()
+
 
 const handleFileInput = (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files.length > 0) {
-    processFile(input.files[0]);
+    emit('file-selected', input.files[0]);
   }
 };
 
@@ -31,7 +33,7 @@ const handleDrop = (event: DragEvent) => {
   isDragging.value = false;
   
   if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-    processFile(event.dataTransfer.files[0]);
+    emit('file-selected', event.dataTransfer.files[0]);
   }
 };
 </script>
