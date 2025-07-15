@@ -49,8 +49,8 @@ watch(
       <VideoControls ref="videoControls" v-if="store.videoUrl" />
     </Transition>
   </section> -->
-  <section v-if="!store.videoUrl" class="p-4 flex flex-row items-stretch justify-center h-full gap-x-8">
-    <div class="flex-1 flex flex-col">
+  <section v-if="!store.videoUrl" class="p-4 flex flex-col items-stretch h-full gap-x-8">
+    <div class="flex-1 flex flex-col mx-auto">
       <h2 class="max-w-2xl mb-4 text-4xl font-roboto-title font-bold leading-none tracking-tight md:text-5xl">What is this?</h2>
       <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
         GoPro Metadata is a tool that allows you to extract and display metadata from GoPro videos.
@@ -59,45 +59,46 @@ watch(
       <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
         And everything happens in your browser. Your data stays local.
       </p>
-    </div>
-    <div class="flex-1 flex flex-col">
       <FileDrop class="h-full" @file-selected="processFile" />
     </div>
   </section>
-  <section class="mx-4 flex flex-col lg:flex-row gap-x-4 h-[calc(100vh-200px)]">
-    <div class="flex-1 flex items-center justify-center">
-      <div v-show="store.videoUrl">
-      <FaceBox class="mb-4">
-        <video ref="videoElement" :src="store.videoUrl" controls @timeupdate="updateCurrentTime"></video>
-      </FaceBox>
+  <Transition name="fade">
+    <section class="mx-4 flex flex-col lg:flex-row gap-x-4 h-[calc(100vh-200px)]">
+      <div class="flex-1 flex items-center justify-center">
+        <div v-show="store.videoUrl">
+        <FaceBox class="mb-4">
+          <video ref="videoElement" :src="store.videoUrl" controls @timeupdate="updateCurrentTime"></video>
+        </FaceBox>
+        <UploadButton />
+        </div>
       </div>
-    </div>
-    <div class="flex-1 h-full" v-if="store.videoUrl">
-      <div class="h-full overflow-y-auto pr-4">
-        <section v-if="store.showMap" class="mb-8">
-          <h2 class="font-roboto-title font-bold">GPS</h2>
-          <Map />
-        </section>
-        <section class="mb-8">
-          <h2 class="font-roboto-title font-bold">Scene</h2>
-          <SceneDisplay />
-        </section>
-        <section class="mb-8">
-          <h2 class="font-roboto-title font-bold">Acceleration</h2>
-          <AccelerationVisualizer />
-        </section>
-        <section class="mb-8">
-          <HueDisplay />
-        </section>
-        <section class="mb-8">
-          <Luminance class="mb-4"/>
-        </section>
-        <section class="mb-4">
-          <DebugData />
-        </section>
+      <div class="flex-1 h-full" v-if="store.videoUrl">
+        <div class="h-full overflow-y-auto pr-4">
+          <section v-if="store.showMap" class="mb-8">
+            <h2 class="font-roboto-title font-bold">GPS</h2>
+            <Map />
+          </section>
+          <section class="mb-8">
+            <h2 class="font-roboto-title font-bold">Scene</h2>
+            <SceneDisplay />
+          </section>
+          <section class="mb-8">
+            <h2 class="font-roboto-title font-bold">Acceleration</h2>
+            <AccelerationVisualizer />
+          </section>
+          <section class="mb-8">
+            <HueDisplay />
+          </section>
+          <section class="mb-8">
+            <Luminance class="mb-4"/>
+          </section>
+          <section class="mb-4">
+            <DebugData />
+          </section>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </Transition>
 </template>
 
 <style scoped>

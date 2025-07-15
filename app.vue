@@ -36,12 +36,12 @@ useHead({
 </script>
 
 <template>
-  <section class="mb-0 p-4 flex flex-col md:flex-row justify-between">
+  <section class="mb-0 py-4 px-10 flex flex-col md:flex-row justify-between">
     <h1 class="text-sky-700 font-roboto-title font-bold text-2xl">GoPro Metadata</h1>
-    <NuxtLink to="/gpmf-export">GPMF Export</NuxtLink>
-    <Transition name="fade">
-      <UploadButton v-if="store.videoUrl"/>
-    </Transition>
+    <div class="flex flex-row gap-4">
+      <NuxtLink to="/">Visualizer</NuxtLink>
+      <NuxtLink to="/gpmf-export">Export</NuxtLink>
+    </div>
   </section>
   <NuxtPage />
 </template>
