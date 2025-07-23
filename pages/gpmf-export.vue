@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { useStore } from "~/store";
-
-const store = useStore();
 
 const handleFile = async (file: File) => {
   if (file.type !== "video/mp4" && !file.name.endsWith(".mp4")) {
@@ -36,7 +32,6 @@ const handleFile = async (file: File) => {
   }
 };
 
-
 </script>
 
 <template>
@@ -49,7 +44,11 @@ const handleFile = async (file: File) => {
       <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
         And everything happens in your browser. Your data stays local.
       </p>
-      <FileDrop class="h-full" @file-selected="handleFile" />
+      
+      <div class="space-y-8">
+        <!-- File Drop -->
+        <FileDrop @file-selected="handleFile" />
+      </div>
     </div>
   </section>
 </template>

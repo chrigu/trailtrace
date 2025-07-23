@@ -4,12 +4,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ref } from 'vue'
 
-
 const emit = defineEmits(['file-selected'])
 
 const isDragging = ref(false)
-
-
 
 const handleFileInput = (event: Event) => {
   const input = event.target as HTMLInputElement;
