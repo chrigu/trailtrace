@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { onMounted} from "vue";
-import { useStore } from "~/store";
 
 let go;
-const store = useStore();
+const route = useRoute();
 
 const loadWasmExec = async () => {
   return new Promise((resolve, reject) => {
@@ -37,10 +36,30 @@ useHead({
 
 <template>
   <section class="mb-0 py-4 px-10 flex flex-col md:flex-row justify-between">
-    <h1 class="text-sky-700 font-roboto-title font-bold text-2xl">GoPro Metadata</h1>
+    <h1 class="text-sky-700 font-roboto-title font-bold text-2xl">GPMF Explorer</h1>
     <div class="flex flex-row gap-4">
-      <NuxtLink to="/">Visualizer</NuxtLink>
-      <NuxtLink to="/gpmf-export">Export</NuxtLink>
+      <NuxtLink 
+        to="/" 
+        :class="[
+          'transition-colors duration-200',
+          route.path === '/' 
+            ? 'text-sky-700 font-semibold border-b-2 border-sky-700' 
+            : 'text-gray-600 hover:text-sky-600'
+        ]"
+      >
+        Visualizer
+      </NuxtLink>
+      <NuxtLink 
+        to="/gpmf-export" 
+        :class="[
+          'transition-colors duration-200',
+          route.path === '/gpmf-export' 
+            ? 'text-sky-700 font-semibold border-b-2 border-sky-700' 
+            : 'text-gray-600 hover:text-sky-600'
+        ]"
+      >
+        Exporter
+      </NuxtLink>
     </div>
   </section>
   <NuxtPage />
