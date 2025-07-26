@@ -28,3 +28,6 @@ gpmf
 *.gpx
 *.bin
 
+# media
+public/videos
+public/thumbnails

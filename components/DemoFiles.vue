@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { ref } from 'vue'
 
 interface DemoFile {
+  title: string
   name: string
   url: string
   description?: string
@@ -74,7 +75,7 @@ const handleDemoFile = async (demoFile: DemoFile) => {
         <div v-if="demoFile.thumbnail && !compact" class="mb-3">
           <img 
             :src="demoFile.thumbnail" 
-            :alt="demoFile.name"
+            :alt="demoFile.title"
             class="w-full h-64 object-cover rounded"
           />
         </div>
@@ -85,7 +86,7 @@ const handleDemoFile = async (demoFile: DemoFile) => {
             'text-gray-900',
             compact ? 'text-sm' : 'md:text-lg lg:text-xl'
           ]">
-            {{ demoFile.name }}
+            {{ demoFile.title }}
           </h4>
           
           <!-- Load button -->

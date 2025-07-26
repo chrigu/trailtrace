@@ -21,17 +21,19 @@ const exportGpx = () => {
 // Demo files configuration - centralized
 const demoFiles = [
   {
-    name: "Evenes Approach Time-lapse",
-    url: "https://gopro-meta.s3.eu-west-1.amazonaws.com/evenes_approach_4k.MP4",
+    title: "Evenes Approach Time-lapse",
+    name: "evenes_approach_4k.MP4",
+    url: "/videos/evenes_approach_4k.MP4",
     description: "Evenes Approach Time-lapse",
-    thumbnail: "https://gopro-meta.s3.eu-west-1.amazonaws.com/evenes_thumb.jpg"
+    thumbnail: "/thumbnails/evenes_thumb.jpg"
   },
-  // {
-  //   name: "Nauders Bike", 
-  //   url: "https://gopro-meta.s3.eu-west-1.amazonaws.com/nauders_bike.MP4",
-  //   description: "Nauders Bike",
-  //   thumbnail: "https://gopro-meta.s3.eu-west-1.amazonaws.com/nauders_bike.MP4"
-  // }
+  {
+    title: "Nauders Bike", 
+    name: "nauders_bike.MP4",
+    url: "/videos/nauders_bike.MP4",
+    description: "Nauders Bike",
+    thumbnail: "/thumbnails/nauders_thumb.jpg"
+  }
 ]
 
 const updateCurrentTime = () => {
@@ -75,13 +77,12 @@ watch(
   <!-- Initial state: no video loaded -->
   <section v-if="!store.videoUrl" class="p-4 flex flex-col items-stretch h-full gap-x-8">
     <div class="flex-1 flex flex-col mx-auto">
-      <h2 class="max-w-2xl mb-4 text-4xl font-roboto-title font-bold leading-none tracking-tight md:text-5xl">Visualizer - What is this?</h2>
+      <h2 class="max-w-2xl mb-4 text-4xl font-roboto-title font-bold leading-none tracking-tight md:text-5xl">🧭 Explorer</h2>
       <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
-        GoPro Metadata is a tool that allows you to extract and display metadata from GoPro videos.
-        It can extract GPMF data in a binary format and export GPS data as GPX.
+        The Explorer is a tool that lets you visualize metadata from GoPro videos — including GPS paths, sensor data, and more.
       </p>
       <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
-        And everything happens in your browser. Your data stays local.
+        Everything happens in your browser. Your data stays local.
       </p>
       <div class="space-y-8">
         <FileDrop @file-selected="processFile" />
@@ -133,7 +134,7 @@ watch(
           </section>
           <section class="mb-8 bg-white p-4">
             <h2 class="font-roboto-title text-lg text-gray-900">Color and Luminance</h2>
-            <div class="flex flex-row gap-4">
+            <div class="flex flex-row justify-between gap-4">
               <HueDisplay />
               <Luminance />
             </div>

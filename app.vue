@@ -37,7 +37,7 @@ useHead({
 
 <template>
   <header class="mb-0 py-4 px-10 flex flex-col md:flex-row justify-between">
-    <h1 class="text-sky-700 font-roboto-title font-bold text-2xl">GPMF Explorer</h1>
+    <h1 class="text-sky-700 font-roboto-title text-2xl">TrailTrace</h1>
     <div class="flex flex-row gap-4 items-center">
       <NuxtLink 
         to="/" 
@@ -48,7 +48,7 @@ useHead({
             : 'text-gray-600 hover:text-sky-600'
         ]"
       >
-        Visualizer
+        Explorer
       </NuxtLink>
       <NuxtLink 
         to="/gpmf-extractor" 
@@ -60,6 +60,17 @@ useHead({
         ]"
       >
         Extractor
+      </NuxtLink>
+      <NuxtLink 
+        to="/about" 
+        :class="[
+          'transition-colors duration-200',
+          route.path === '/about' 
+            ? 'text-sky-700 font-semibold border-b-2 border-sky-700' 
+            : 'text-gray-600 hover:text-sky-600'
+        ]"
+      >
+        About
       </NuxtLink>
     </div>
   </header>
