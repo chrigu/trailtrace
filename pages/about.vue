@@ -1,38 +1,6 @@
 <script setup lang="ts">
 import { Button } from '~/components/ui/button'
 
-const handleFile = async (file: File) => {
-  if (file.type !== "video/mp4" && !file.name.endsWith(".mp4")) {
-    console.error("Selected file is not an MP4");
-    return;
-  }
-
-  if (window.exportGPMF) {
-    try {
-      const gpmfData = await window.exportGPMF(file) as Uint8Array;
-      
-      // Create a blob from the Uint8Array
-      const blob = new Blob([gpmfData], { type: 'application/octet-stream' });
-      
-      // Create a download link
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${file.name.replace('.mp4', '')}_gpmf.bin`;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Cleanup
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Error exporting GPMF:", err);
-    }
-  } else {
-    console.error("WASM exportGPMF function not available");
-  }
-};
-
 </script>
 
 <template>
@@ -55,7 +23,7 @@ const handleFile = async (file: File) => {
         The core of the app is a <a href="https://github.com/chrigu/go-gpmf" class="text-sky-700" target="_blank">Go-based GPMF parser</a>, compiled to WebAssembly (WASM). This enables fast, local parsing of GoPro metadata directly in your browser.
       </p>
       <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
-        The visual interface is powered by a <a href="https://github.com/chrigu/gopro-meta" class="text-sky-700" target="_blank">Nuxt.js frontend</a>, which lets you explore and inspect the extracted metadata — from maps to timestamps and raw sensor values.
+        The visual interface is powered by a <a href="https://github.com/chrigu/trailtrace" class="text-sky-700" target="_blank">Nuxt.js frontend</a>, which lets you explore and inspect the extracted metadata — from maps to timestamps and raw sensor values.
       </p>
       </section>
       <section>
@@ -72,7 +40,7 @@ const handleFile = async (file: File) => {
           </a>
         </Button>
         <Button variant="outline" size="lg" as-child>
-          <a href="https://github.com/chrigu/gopro-meta" target="_blank" rel="noopener" class="w-full sm:w-auto">
+          <a href="https://github.com/chrigu/trailtrace" target="_blank" rel="noopener" class="w-full sm:w-auto">
             Nuxt Frontend ↗
           </a>
         </Button>

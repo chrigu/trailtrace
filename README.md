@@ -1,4 +1,6 @@
-# GoPro Metadata Display
+# Trailtrace
+
+See it online https://trailtrace.video/
 
 Displays Gopro's  metadata like:
 - 🌍 GPS
