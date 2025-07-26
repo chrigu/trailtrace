@@ -4,6 +4,7 @@ import { useStore } from "~/store";
 import VideoControls from '../components/VideoControls.vue'
 import DebugData from '../components/DebugData.vue'
 import DemoFiles from '../components/DemoFiles.vue'
+import { Button } from '~/components/ui/button'
 import { useProcessGoproFile } from '../composables'
 
 const store = useStore();
@@ -12,6 +13,10 @@ const videoControls = ref<InstanceType<typeof VideoControls> | null>(null);
 const currentTime = ref(0);
 
 const { processFile } = useProcessGoproFile()
+
+const exportGpx = () => {
+  store.exportGpx();
+}
 
 // Demo files configuration - centralized
 const demoFiles = [
@@ -23,15 +28,9 @@ const demoFiles = [
   },
   // {
   //   name: "Nauders Bike", 
-  //   url: "https://gopro-meta.s3.eu-west-1.amazonaws.com/nauders_bike.mp4",
+  //   url: "https://gopro-meta.s3.eu-west-1.amazonaws.com/nauders_bike.MP4",
   //   description: "Nauders Bike",
-  //   thumbnail: "https://gopro-meta.s3.eu-west-1.amazonaws.com/nauders_bike.mp4"
-  // },
-  // {
-  //   name: "Skiing Mürren",
-  //   url: "https://gopro-meta.s3.eu-west-1.amazonaws.com/ski_murren.MP4", 
-  //   description: "Skiing Mürren",
-  //   thumbnail: "https://gopro-meta.s3.eu-west-1.amazonaws.com/ski_murren.MP4"
+  //   thumbnail: "https://gopro-meta.s3.eu-west-1.amazonaws.com/nauders_bike.MP4"
   // }
 ]
 
@@ -84,12 +83,8 @@ watch(
       <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
         And everything happens in your browser. Your data stays local.
       </p>
-      
       <div class="space-y-8">
-        <!-- File Drop -->
         <FileDrop @file-selected="processFile" />
-        
-        <!-- Demo Files -->
         <DemoFiles :demo-files="demoFiles" @file-selected="processFile" />
       </div>
     </div>
@@ -97,42 +92,53 @@ watch(
   
   <!-- Video loaded state -->
   <Transition name="fade">
-    <section class="mx-4 flex flex-col lg:flex-row gap-x-4 h-[calc(100vh-200px)]" v-if="store.videoUrl">
+    <section class="flex flex-col lg:flex-row gap-x-4 h-[calc(100vh-200px)]" v-if="store.videoUrl">
       <!-- Main content area -->
-      <div class="flex-1 flex items-center justify-center">
+      <div class="flex-1 flex justify-center mt-6">
         <div>
           <FaceBox class="mb-4">
             <video ref="videoElement" :src="store.videoUrl" controls @timeupdate="updateCurrentTime"></video>
           </FaceBox>
           <UploadButton />
-          <DemoFiles :demo-files="demoFiles" @file-selected="processFile" compact />
         </div>
       </div>
       
       <!-- Sidebar with metadata and demo files -->
       <div class="flex-1 h-full">
-        <div class="h-full overflow-y-auto pr-4 space-y-6">
+        <div class="h-full overflow-y-auto space-y-6">
           
           <!-- Metadata sections -->
-          <section v-if="(store as any).showMap" class="mb-8">
-            <h2 class="font-roboto-title font-bold">GPS</h2>
+          <section v-if="(store as any).showMap" class="mb-8 bg-white p-4">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="font-roboto-title text-lg text-gray-900">GPS</h2>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                @click="exportGpx"
+                :disabled="store.gpsData.length === 0"
+                class="text-sm"
+              >
+                Export GPX
+              </Button>
+            </div>
             <Map />
           </section>
-          <section class="mb-8">
-            <h2 class="font-roboto-title font-bold">Scene</h2>
+          <section class="mb-8 bg-white p-4">
+            <h2 class="font-roboto-title text-lg text-gray-900">Scene</h2>
             <SceneDisplay />
           </section>
-          <section class="mb-8">
-            <h2 class="font-roboto-title font-bold">Acceleration</h2>
+          <section class="mb-8 bg-white p-4">
+            <h2 class="font-roboto-title text-lg text-gray-900">Acceleration</h2>
             <AccelerationVisualizer />
           </section>
-          <section class="mb-8">
-            <HueDisplay />
+          <section class="mb-8 bg-white p-4">
+            <h2 class="font-roboto-title text-lg text-gray-900">Color and Luminance</h2>
+            <div class="flex flex-row gap-4">
+              <HueDisplay />
+              <Luminance />
+            </div>
           </section>
-          <section class="mb-8">
-            <Luminance class="mb-4"/>
-          </section>
-          <section class="mb-4">
+          <section class="mb-4 bg-white p-4">
             <DebugData />
           </section>
         </div>

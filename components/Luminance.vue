@@ -1,22 +1,24 @@
 <template>
   <div v-if="store.currentLuminanceData">
-    <!-- Show numeric value -->
-    <p>Luminance: {{ store.currentLuminanceData.luminance }}</p>
-
-    <!-- Show gray box representing luminance -->
-    <div
-      :style="{
-        backgroundColor: luminanceToGray(store.currentLuminanceData.luma),
-        width: '100px',
-        height: '100px',
-        border: '1px solid #000',
-      }"
-    ></div>
+    <h3>Luminance</h3>
+    <div class="luminance-container">
+      <div class="luminance-item">
+        <div
+          :style="{
+            backgroundColor: luminanceToGray(store.currentLuminanceData.luma),
+            width: '50px',
+            height: '50px',
+            border: '1px solid #000',
+            marginBottom: '5px'
+          }"
+        ></div>
+        <div>Value: {{ store.currentLuminanceData.luma.toFixed(1) }}</div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { useStore } from "~/store";
 
 const store = useStore()
@@ -26,3 +28,17 @@ const luminanceToGray = (luminance) => {
   return `rgb(${luminance}, ${luminance}, ${luminance})`
 }
 </script>
+
+<style scoped>
+.luminance-container {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.luminance-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+</style>

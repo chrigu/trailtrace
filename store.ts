@@ -105,8 +105,8 @@ export const useStore = defineStore('metaData', {
       const startTime = state.sceneData[0]?.timestamp;
       return findClosestObject(state.sceneData, state.videoCurrentTime, startTime);
     },
-    showMap(state) {
-      const gpsData = this.currentGpsData;
+    showMap(state): boolean {
+      const gpsData = this.currentGpsData as GpsData | null;
       return state.gpsData.length > 1 && gpsData?.longitude !== 0 && gpsData?.latitude !== 0;
     }
   },

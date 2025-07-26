@@ -1,7 +1,7 @@
 <template>
   <div class="scene-display">
-    <div v-if="currentScene" class="scene-value">
-      Current Scene: {{ sceneEmoji }}
+    <div v-if="currentScene" class="scene-value text-lg">
+      {{ sceneEmoji }} {{ currentScene }}
     </div>
     <div v-else class="no-scene">
       No scene data available

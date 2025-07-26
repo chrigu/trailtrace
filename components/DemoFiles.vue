@@ -46,10 +46,15 @@ const handleDemoFile = async (demoFile: DemoFile) => {
 </script>
 
 <template>
-  <div v-if="demoFiles && demoFiles.length > 0" class="space-y-4">
+  <div v-if="demoFiles && demoFiles.length > 0"
+    :class="[
+      'space-y-4 bg-white',
+      compact 
+        ? '' 
+        : 'border-2 rounded-xl p-6 text-center transition-colors'
+    ]">
     <div class="text-center" v-if="!compact">
-      <h3 class="text-lg font-medium text-gray-900 mb-2">Demo Files</h3>
-      <p class="text-sm text-gray-500 mb-4">Try a demo file:</p>
+      <p class="md:text-lg lg:text-xl text-gray-900 mb-4">Try a demo</p>
     </div>
     
     <div :class="[
@@ -61,7 +66,7 @@ const handleDemoFile = async (demoFile: DemoFile) => {
         v-for="demoFile in demoFiles" 
         :key="demoFile.name"
         :class="[
-          'border border-gray-200 rounded-lg hover:border-sky-400 transition-colors',
+          'rounded-lg transition-colors',
           compact ? 'p-2' : 'p-4'
         ]"
       >
@@ -77,22 +82,17 @@ const handleDemoFile = async (demoFile: DemoFile) => {
         <!-- File info -->
         <div :class="compact ? 'space-y-1 text-center' : 'space-y-2'">
           <h4 :class="[
-            'font-medium text-gray-900',
-            compact ? 'text-sm' : 'text-base'
+            'text-gray-900',
+            compact ? 'text-sm' : 'md:text-lg lg:text-xl'
           ]">
             {{ demoFile.name }}
           </h4>
-          
-          <p v-if="demoFile.description && !compact" class="text-sm text-gray-500">
-            {{ demoFile.description }}
-          </p>
           
           <!-- Load button -->
           <Button 
             @click="handleDemoFile(demoFile)"
             :disabled="isLoadingDemo === demoFile.name"
-            :class="compact ? 'w-auto' : 'w-full'"
-            :size="compact ? 'sm' : 'sm'"
+            class="w-auto bg-sky-700 hover:bg-sky-800 text-white rounded"
           >
             <span v-if="isLoadingDemo === demoFile.name">Loading...</span>
             <span v-else>{{ compact ? 'Load' : 'Load Demo' }}</span>
