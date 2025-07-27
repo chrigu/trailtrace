@@ -93,7 +93,7 @@ watch(
   
   <!-- Video loaded state -->
   <Transition name="fade">
-    <section class="flex flex-col lg:flex-row gap-x-4 h-[calc(100vh-200px)]" v-if="store.videoUrl">
+    <section class="flex flex-col lg:flex-row gap-x-4 h-[calc(100vh-50px)]" v-if="store.videoUrl">
       <!-- Main content area -->
       <div class="flex-1 flex justify-center mt-6">
         <div>
