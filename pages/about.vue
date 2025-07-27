@@ -16,6 +16,9 @@ import { Button } from '~/components/ui/button'
       <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
         Thanks to modern web technologies, all of this can now be extracted directly in your browser — no need to upload anything to a server.
       </p>
+      <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
+        Note: Only tested with GoPro Hero 11 and 13 so far — other models might behave differently.
+      </p>
       </section>
       <section>
       <h3 class="max-w-2xl mb-4 text-2xl font-roboto-title font-bold leading-none tracking-tight md:text-3xl">Tech Stuff</h3>
