@@ -19,6 +19,8 @@
     "chart.js": "^4.4.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "gopro-telemetry": "^1.2.9",
+    "gpmf-extract": "^0.3.2",
     "lucide-vue-next": "^0.482.0",
     "nuxt": "^4.0.2",
     "nuxt-umami": "^3.2.0",
