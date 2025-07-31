@@ -1,0 +1,9 @@
+.nuxt
+.output
+.vercel
+.git-crypt
+supabase/.temp
+supabase/.branches
+node_modules
+public/zipcodes.json
+database.generated.types.ts

@@ -4,28 +4,7 @@ import { onMounted, ref} from "vue";
 let go: any;
 const route = useRoute();
 
-const loadWasmExec = async () => {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "/wasm_exec.js"; // Load from public folder
-    script.onload = resolve;
-    script.onerror = reject;
-    document.body.appendChild(script);
-  });
-};
 
-onMounted(async () => {
-  try {
-    await loadWasmExec();
-    go = new (window as any).Go();
-    const wasmResponse = await fetch("/main.wasm");
-    const wasmBytes = await wasmResponse.arrayBuffer();
-    const { instance } = await WebAssembly.instantiate(wasmBytes, go.importObject);
-    go.run(instance);
-  } catch (error) {
-    console.error("Error loading WebAssembly:", error);
-  }
-});
 
 useHead({
   bodyAttrs: {

@@ -1,0 +1,14 @@
+{
+  "htmlWhitespaceSensitivity": "ignore",
+  "jsonRecursiveSort": true,
+  "organizeImportsSkipDestructiveCodeActions": false,
+  "plugins": [
+    "prettier-plugin-organize-imports",
+    "prettier-plugin-sort-json",
+    "prettier-plugin-tailwindcss"
+  ],
+  "printWidth": 88,
+  "semi": true,
+  "singleQuote": false,
+  "tabWidth": 2
+}
