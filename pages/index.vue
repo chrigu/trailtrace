@@ -1,25 +1,23 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import { useStore, type GpsData } from "~/store";
+import { useStore } from "~/store";
 import VideoControls from '../components/VideoControls.vue'
 import DebugData from '../components/DebugData.vue'
 import DemoFiles from '../components/DemoFiles.vue'
 import { Button } from '~/components/ui/button'
-import { useProcessGoproFile } from '../composables'
+import { useTelemetryProcessor } from '~/composables/useTelemetryProcessor'
+import ChangeFileButton from '~/components/ChangeFileButton.vue'
 
 const store = useStore();
 const videoElement = ref<HTMLVideoElement | null>(null);
 const videoControls = ref<InstanceType<typeof VideoControls> | null>(null);
 const currentTime = ref(0);
 
-// const { processFile } = useProcessGoproFile()
+const { processFileWithTelemetry } = useTelemetryProcessor()
 
 const exportGpx = () => {
   store.exportGpx();
 }
-
-let worker: Worker;
-let req = 0;
 
 // Demo files configuration - centralized
 const demoFiles = [
@@ -46,71 +44,16 @@ const updateCurrentTime = () => {
   }
 };
 
-function exportTelemetryInWorker(file: File): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const id = ++req;
-
-    const listener = ({ data }: MessageEvent) => {
-      if (data.id !== id) return;
-      worker.removeEventListener('message', listener);
-
-      if (data.ok) {
-        resolve(data.payload); // ✅ use as-is
-      } else {
-        reject(data.error);
-      }
-    };
-
-    worker.addEventListener('message', listener);
-    console.log('📤 posting message', id, file.size);
-    worker.postMessage({ id, file, method: 'processFile' });
-  });
-}
-
-
-
 async function processFile(file: File) {
-  store.setVideoUrl(URL.createObjectURL(file));
-  if (file.type !== "video/mp4" && !file.name.toLowerCase().endsWith(".mp4")) {
-    console.error("Selected file is not an MP4");
-    return;
-  }
-
-  console.log('processFile', file);
-
+  console.log('processFile', file)
   try {
-    // const gpmf = await exportGPMFInWorker(file);     // **no main-thread Wasm call**
-    console.log('Calling exportGPMFInWorker...');
-    const telemetry = await exportTelemetryInWorker(file);
-    console.log('Telemetry data received:', telemetry);
-
-
-
-    if (telemetry) {
-      try {
-        const metadata = telemetry as { gpsData: GpsData[], gyroData: any[], faceData: any[], lumaData: any[], hueData: any[], sceneData: any[] };
-        console.log("Metadata data:", metadata);
-        store.setGpsData(metadata.gpsData);
-        store.setGyroData(metadata.gyroData);
-        store.setFaceData(metadata.faceData);
-        store.setLuminanceData(metadata.lumaData);
-        store.setHueData(metadata.hueData);
-        store.setSceneData(metadata.sceneData);
-      } catch (err) {
-        console.error("Error processing file:", err);
-      }
-    } else {
-      console.error("No telemetry data received");
-    }
+    await processFileWithTelemetry(file)
   } catch (err) {
-    console.error('Error processing file:', err);
+    console.error('Error processing file:', err)
   }
 }
 
-// Load wasm_exec.js and WebAssembly
 onMounted(async () => {
-  worker = new Worker('/worker_wasm.js');
-  console.log('Worker spawned', worker);
   if (videoElement.value) {
     videoElement.value.addEventListener("timeupdate", updateCurrentTime);
     videoElement.value.addEventListener("loadedmetadata", () => {
@@ -169,7 +112,7 @@ watch(
           <FaceBox class="mb-4">
             <video ref="videoElement" :src="store.videoUrl" controls @timeupdate="updateCurrentTime"></video>
           </FaceBox>
-          <UploadButton />
+          <ChangeFileButton @file-selected="processFile" />
         </div>
       </div>
 

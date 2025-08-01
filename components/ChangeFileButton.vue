@@ -2,14 +2,14 @@
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useProcessGoproFile } from '../composables'
 
-const { processFile } = useProcessGoproFile()
+const emit = defineEmits(['file-selected']);
 
 const handleFileInput = (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files.length > 0) {
-    processFile(input.files[0]);
+    const file = input.files[0];
+    emit('file-selected', file);
   }
 };
 
