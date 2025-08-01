@@ -129,6 +129,8 @@ const processFile = async (file: File) => {
     // Dynamic import of gpmf-extract for browser compatibility
     const { default: gpmfExtract } = await import('gpmf-extract')
     
+    // measure time
+    const startTime = performance.now()
     // Extract GPMF data with progress tracking
     const result = await gpmfExtract(file, {
       browserMode: true,
@@ -136,6 +138,10 @@ const processFile = async (file: File) => {
         progress.value = percent
       }
     })
+
+    const endTime = performance.now()
+    const duration = endTime - startTime
+    console.log("%c" + "GPMF (JS) extraction took " + duration.toFixed(2) + "ms", "color:green;font-weight:bold;");
     
     if (!result) {
       throw new Error('No GPMF data found in this file')

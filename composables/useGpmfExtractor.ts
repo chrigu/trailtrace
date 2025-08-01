@@ -20,7 +20,7 @@ export const useGpmfExtractor = () => {
 
     const endTime = performance.now()
     const duration = endTime - startTime
-    console.log(`GPMF extraction took ${duration.toFixed(2)}ms`)
+    console.log("%c" + "GPMF (WASM) extraction took " + duration.toFixed(2) + "ms", "color:green;font-weight:bold;");
     
     return new Uint8Array(gpmfData)
   }
