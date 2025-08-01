@@ -91,3 +91,7 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Todo
+- Rename main.wasm to something meaningful
+- Update README
