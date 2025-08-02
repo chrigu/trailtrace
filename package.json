@@ -12,7 +12,7 @@
   "dependencies": {
     "@nuxtjs/leaflet": "1.2.6",
     "@nuxtjs/tailwindcss": "^6.13.2",
-    "@pinia/nuxt": "0.10.1",
+    "@pinia/nuxt": "^0.11.2",
     "@unovis/ts": "^1.5.1",
     "@unovis/vue": "^1.5.1",
     "@vueuse/core": "^13.0.0",
@@ -20,8 +20,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.482.0",
-    "nuxt": "^3.16.0",
-    "pinia": "^3.0.1",
+    "nuxt": "^4.0.2",
+    "pinia": "^3.0.3",
     "reka-ui": "^2.1.1",
     "shadcn-nuxt": "1.0.3",
     "tailwind-merge": "^3.0.2",
@@ -31,5 +31,7 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "prettier-plugin-organize-imports": "^4.2.0",
+    "prettier-plugin-tailwindcss": "^0.6.14"
   }
 }

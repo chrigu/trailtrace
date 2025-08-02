@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref} from "vue";
 
-let go: any;
 const route = useRoute();
-
-
 
 useHead({
   bodyAttrs: {

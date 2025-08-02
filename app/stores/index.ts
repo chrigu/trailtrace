@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore, createPinia, setActivePinia } from 'pinia'
 
 
 export interface GpsData {
@@ -54,6 +54,10 @@ export interface SceneData {
   }[];
   timestamp: number;
 }
+
+const pinia = createPinia()
+
+export default { store: setActivePinia(pinia) }
 
 export const useStore = defineStore('metaData', {
   state: () => ({

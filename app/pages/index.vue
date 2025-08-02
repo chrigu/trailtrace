@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import { useStore } from "~/store";
+import { useStore } from "~/stores/index";
 import VideoControls from '../components/VideoControls.vue'
 import DebugData from '../components/DebugData.vue'
 import DemoFiles from '../components/DemoFiles.vue'
-import { Button } from '~/components/ui/button'
+import { Button } from '~/components/ui/button/index'
 import { useTelemetryProcessor } from '~/composables/useTelemetryProcessor'
 import ChangeFileButton from '~/components/ChangeFileButton.vue'
 

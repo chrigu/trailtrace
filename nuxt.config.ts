@@ -5,7 +5,6 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/leaflet',
     '@pinia/nuxt',
-    '@pinia/nuxt',
     '@nuxtjs/tailwindcss',
     'shadcn-nuxt',
   ],
@@ -18,5 +17,12 @@ export default defineNuxtConfig({
         },
       ],
     },
+  },
+  pinia: {
+    storesDirs: ['./stores/**',],
+  },
+  shadcn: {
+    prefix: "",
+    componentDir: "./app/components/ui",
   },
 })

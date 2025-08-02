@@ -1,6 +1,6 @@
 import { useWorker } from './useWorker'
 import { useFileValidation } from './useFileValidation'
-import { useStore, type GpsData } from '~/store'
+import { useStore, type GpsData } from '~/stores'
 
 export interface TelemetryData {
   gpsData: GpsData[]
