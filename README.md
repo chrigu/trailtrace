@@ -1,8 +1,8 @@
 # Trailtrace
 
-See it online https://trailtrace.video/
+Test it online https://trailtrace.video/
 
-Displays Gopro's  metadata like:
+Trailtrace let's you explore the follwing GoPro metadata from your mp4-files directly in your browser:
 - 🌍 GPS
 - 🚀 Acceleration
 - ☀️ Luminance
@@ -10,13 +10,19 @@ Displays Gopro's  metadata like:
 - 😀 Face
 - 🎬 Scene
 
+Your footage is processed locally — no need to upload anything to a server.
+
 Other features:
 - 💾 Extract GPMF data
 - 🛰️ Extract GPX data
 
 ## GPMF Parser
 
-Uses wasm file from https://github.com/chrigu/go-gpmf
+The GPMF (GoPro Metadata Format) parser is written in Go and complied to WASM. 
+
+The mp4-file is never read as a whole, this allows to process files > 2GB, which is the memory limit for WASM in most browsers.
+
+You can find the Go implementation at https://github.com/chrigu/go-gpmf
 
 ## Nuxt
 
@@ -89,8 +95,6 @@ yarn preview
 # bun
 bun run preview
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
 
 ## Todo
 - Rename main.wasm to something meaningful
