@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useStore } from '~/store'
+import { useStore } from '~/stores'
 import { Button } from '@/components/ui/button'
 import { Play, Pause } from 'lucide-vue-next'
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import { useStore } from "~/store";
+import { useStore } from "~/stores";
 
 const store = useStore();
 

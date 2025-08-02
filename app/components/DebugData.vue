@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useStore } from "~/store";
+import { useStore } from "~/stores";
 import { Eye, EyeOff } from "lucide-vue-next";
 import { Button } from '@/components/ui/button'
 

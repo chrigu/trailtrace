@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from "vue";
-import { useStore } from "@/store";
+import { useStore } from "~/stores";
 
 const zoom = ref(6);
 const store = useStore();

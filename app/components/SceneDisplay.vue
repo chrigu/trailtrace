@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useStore, type SceneData } from '../store';
+import { useStore, type SceneData } from '../stores';
 
 const store = useStore();
 

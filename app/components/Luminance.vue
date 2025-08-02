@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { useStore } from "~/store";
+import { useStore } from "~/stores";
 
 const store = useStore()
 
