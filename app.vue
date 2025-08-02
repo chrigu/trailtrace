@@ -9,7 +9,18 @@ const route = useRoute();
 useHead({
   bodyAttrs: {
     class: "bg-stone-100"
-  }
+  },
+  title: 'TrailTrace – GoPro GPS Visualizer',
+  meta: [
+    { name: 'description', content: 'Free browser-based tool to extract and visualize GoPro telemetry data like GPS, acceleration and more.' },
+    { property: 'og:title', content: 'TrailTrace – GoPro GPS Visualizer' },
+    { property: 'og:description', content: 'Free browser-based tool to extract and visualize GoPro telemetry data like GPS, acceleration and more.' },
+    { property: 'og:image', content: 'https://trailtrace.video/og-image.jpg' },
+    { property: 'twitter:card', content: 'summary_large_image' },
+    { property: 'twitter:title', content: 'TrailTrace – GoPro GPS Visualizer' },
+    { property: 'twitter:description', content: 'Free browser-based tool to extract and visualize GoPro telemetry data like GPS, acceleration and more.' },
+    { property: 'twitter:image', content: 'https://trailtrace.video/og-image.jpg' },
+  ],
 })
 
 </script>
