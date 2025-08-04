@@ -25,4 +25,7 @@ export default defineNuxtConfig({
     prefix: "",
     componentDir: "./app/components/ui",
   },
+  nitro: {
+    compressPublicAssets: { brotli: true, gzip: true } // includes application/wasm
+  },
 })
