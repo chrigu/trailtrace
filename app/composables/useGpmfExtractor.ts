@@ -10,11 +10,11 @@ export const useGpmfExtractor = () => {
       throw new Error('Invalid MP4 file')
     }
 
-    // measure time
-    const startTime = performance.now()
     initializeWorker()
     console.log('Calling exportGPMFInWorker...')
     
+    // measure time
+    const startTime = performance.now()
     const gpmfData = await executeWorkerMethod<ArrayBuffer>(file, 'exportGPMF')
     console.log('GPMF data received:', gpmfData)
 
