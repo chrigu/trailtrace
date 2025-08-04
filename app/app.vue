@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DataPrivacy from '~/components/DataPrivacy.vue';
 
 const route = useRoute();
 
@@ -22,8 +23,9 @@ useHead({
 </script>
 
 <template>
-  <header class="mb-0 py-4 px-10 flex flex-col md:flex-row justify-between">
-    <h1 class="text-sky-700 font-roboto-title text-2xl">TrailTrace</h1>
+  <div class="min-h-screen flex flex-col">
+    <header class="mb-0 py-4 px-10 flex flex-col md:flex-row justify-between">
+      <h1 class="text-sky-700 font-roboto-title text-2xl">TrailTrace</h1>
     <div class="flex flex-row gap-4 items-center">
       <NuxtLink 
         to="/" 
@@ -60,7 +62,9 @@ useHead({
       </NuxtLink>
     </div>
   </header>
-  <main class="px-10">
+  <main class="px-10 flex-grow">
     <NuxtPage />
   </main>
+  <DataPrivacy />
+  </div>
 </template>

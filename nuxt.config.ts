@@ -2,12 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  modules: [
-    '@nuxtjs/leaflet',
-    '@pinia/nuxt',
-    '@nuxtjs/tailwindcss',
-    'shadcn-nuxt',
-  ],
+  modules: ['@nuxtjs/leaflet', '@pinia/nuxt', '@nuxtjs/tailwindcss', 'shadcn-nuxt', 'nuxt-umami'],
   app: {
     head: {
       link: [
@@ -28,4 +23,11 @@ export default defineNuxtConfig({
   nitro: {
     compressPublicAssets: { brotli: true, gzip: true } // includes application/wasm
   },
+  umami: {
+    id: 'c63f819a-6bb0-4bef-9980-7325ce80f2df',
+    host: 'https://cloud.umami.is',
+    autoTrack: true,
+    domains: ['trailtrace.video']
+  },
 })
+
