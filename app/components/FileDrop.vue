@@ -40,10 +40,10 @@ const handleDrop = (event: DragEvent) => {
 
 <template>
   <div>
-    <div 
-      class="border-2 border-dashed rounded-xl p-6 text-center transition-colors bg-white"
+    <div
+      class="border-2 border-dashed rounded-xl p-6 text-center transition-all bg-white/60 backdrop-blur-sm"
       :class="[
-        isDragging ? 'border-sky-700 bg-sky-50' : 'border-gray-300 hover:border-sky-400',
+        isDragging ? 'border-primary bg-blue-50/80 shadow-lg scale-105' : 'border-border hover:border-primary/50 hover:shadow-md',
         'cursor-pointer',
       ]"
       @dragover="handleDragOver"
@@ -51,22 +51,21 @@ const handleDrop = (event: DragEvent) => {
       @drop="handleDrop"
     >
       <div class="space-y-4">
-        <div class="text-gray-900">
+        <div class="text-foreground">
           <p class="md:text-lg lg:text-xl font-medium">Drag and drop your GoPro file here</p>
         </div>
-        <p class="space-y-4 text-md">or</p>
+        <p class="space-y-4 text-md text-muted-foreground">or</p>
         <div class="flex flex-row justify-center items-center gap-4">
-          <Label for="videofile" class="cursor-pointer bg-sky-700 hover:bg-sky-800 text-white rounded px-4 py-2">Select a file</Label>
-          <Input 
-            id="videofile" 
-            type="file" 
-            @change="handleFileInput" 
-            accept="video/mp4" 
-            class="hidden" 
+          <Label for="videofile" class="cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground rounded px-6 py-2 font-medium transition-all">Select a file</Label>
+          <Input
+            id="videofile"
+            type="file"
+            @change="handleFileInput"
+            accept="video/mp4"
+            class="hidden"
           />
         </div>
       </div>
     </div>
   </div>
 </template>
-

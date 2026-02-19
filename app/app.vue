@@ -5,7 +5,7 @@ const route = useRoute();
 
 useHead({
   bodyAttrs: {
-    class: "bg-stone-100"
+    class: "bg-background"
   },
   title: 'TrailTrace – GoPro GPS Visualizer',
   meta: [
@@ -23,39 +23,39 @@ useHead({
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col">
-    <header class="mb-0 py-4 px-10 flex flex-col md:flex-row justify-between">
-      <h1 class="text-sky-700 font-roboto-title text-2xl">TrailTrace</h1>
-    <div class="flex flex-row gap-4 items-center">
-      <NuxtLink 
-        to="/" 
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-blue-50">
+    <header class="mb-0 py-4 px-10 flex flex-col md:flex-row justify-between border-b border-border bg-white/50 backdrop-blur-sm">
+      <h1 class="text-primary font-roboto-title text-2xl font-bold">TrailTrace</h1>
+    <div class="flex flex-row gap-6 items-center">
+      <NuxtLink
+        to="/"
         :class="[
-          'transition-colors duration-200',
-          route.path === '/' 
-            ? 'text-sky-700 font-semibold border-b-2 border-sky-700' 
-            : 'text-gray-600 hover:text-sky-600'
+          'transition-all duration-200 font-medium',
+          route.path === '/'
+            ? 'text-primary font-semibold border-b-2 border-primary'
+            : 'text-muted-foreground hover:text-primary'
         ]"
       >
         Explorer
       </NuxtLink>
-      <NuxtLink 
-        to="/gpmf-extractor" 
+      <NuxtLink
+        to="/gpmf-extractor"
         :class="[
-          'transition-colors duration-200',
-          route.path === '/gpmf-extractor' 
-            ? 'text-sky-700 font-semibold border-b-2 border-sky-700' 
-            : 'text-gray-600 hover:text-sky-600'
+          'transition-all duration-200 font-medium',
+          route.path === '/gpmf-extractor'
+            ? 'text-primary font-semibold border-b-2 border-primary'
+            : 'text-muted-foreground hover:text-primary'
         ]"
       >
         Extractor
       </NuxtLink>
-      <NuxtLink 
-        to="/about" 
+      <NuxtLink
+        to="/about"
         :class="[
-          'transition-colors duration-200',
-          route.path === '/about' 
-            ? 'text-sky-700 font-semibold border-b-2 border-sky-700' 
-            : 'text-gray-600 hover:text-sky-600'
+          'transition-all duration-200 font-medium',
+          route.path === '/about'
+            ? 'text-primary font-semibold border-b-2 border-primary'
+            : 'text-muted-foreground hover:text-primary'
         ]"
       >
         About

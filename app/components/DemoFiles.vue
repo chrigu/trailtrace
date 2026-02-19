@@ -49,51 +49,51 @@ const handleDemoFile = async (demoFile: DemoFile) => {
 <template>
   <div v-if="demoFiles && demoFiles.length > 0"
     :class="[
-      'space-y-4 bg-white',
-      compact 
-        ? '' 
-        : 'border-2 rounded-xl p-6 text-center transition-colors'
+      'space-y-4 bg-white/60 backdrop-blur-sm',
+      compact
+        ? ''
+        : 'border-2 border-border rounded-xl p-6 text-center transition-colors'
     ]">
     <div class="text-center" v-if="!compact">
-      <p class="md:text-lg lg:text-xl text-gray-900 mb-4">Try a demo</p>
+      <p class="md:text-lg lg:text-xl text-foreground font-semibold mb-4">Try a demo</p>
     </div>
-    
+
     <div :class="[
-      compact 
-        ? 'mx-auto' 
+      compact
+        ? 'mx-auto'
         : 'grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4'
     ]">
-      <div 
-        v-for="demoFile in demoFiles" 
+      <div
+        v-for="demoFile in demoFiles"
         :key="demoFile.name"
         :class="[
-          'rounded-lg transition-colors',
-          compact ? 'p-2' : 'p-4'
+          'rounded-lg transition-all hover:shadow-md',
+          compact ? 'p-2' : 'p-4 bg-white/50 border border-border/50'
         ]"
       >
         <!-- Thumbnail if available and not compact -->
         <div v-if="demoFile.thumbnail && !compact" class="mb-3">
-          <img 
-            :src="demoFile.thumbnail" 
+          <img
+            :src="demoFile.thumbnail"
             :alt="demoFile.title"
-            class="w-full h-64 object-cover rounded"
+            class="w-full h-64 object-cover rounded-lg shadow-md"
           />
         </div>
-        
+
         <!-- File info -->
         <div :class="compact ? 'space-y-1 text-center' : 'space-y-2'">
           <h4 :class="[
-            'text-gray-900',
+            'text-foreground font-medium',
             compact ? 'text-sm' : 'md:text-lg lg:text-xl'
           ]">
             {{ demoFile.title }}
           </h4>
-          
+
           <!-- Load button -->
-          <Button 
+          <Button
             @click="handleDemoFile(demoFile)"
             :disabled="isLoadingDemo === demoFile.name"
-            class="w-auto bg-sky-700 hover:bg-sky-800 text-white rounded"
+            class="w-auto bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded font-medium transition-all"
           >
             <span v-if="isLoadingDemo === demoFile.name">Loading...</span>
             <span v-else>{{ compact ? 'Load' : 'Load Demo' }}</span>
@@ -102,4 +102,4 @@ const handleDemoFile = async (demoFile: DemoFile) => {
       </div>
     </div>
   </div>
-</template> 
+</template>
