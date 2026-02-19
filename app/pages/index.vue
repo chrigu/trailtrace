@@ -87,13 +87,13 @@ watch(
   <!-- Initial state: no video loaded -->
   <section v-if="!store.videoUrl" class="p-4 flex flex-col items-stretch h-full gap-x-8">
     <div class="flex-1 flex flex-col mx-auto">
-      <h2 class="max-w-2xl mb-4 text-4xl font-roboto-title font-bold leading-none tracking-tight md:text-5xl">🧭
+      <h2 class="max-w-2xl mb-4 text-4xl font-roboto-title font-bold leading-none tracking-tight md:text-5xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">🧭
         Explorer</h2>
-      <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
+      <p class="max-w-2xl mb-6 font-light text-muted-foreground lg:mb-8 md:text-lg lg:text-xl">
         The Explorer is a tool that lets you visualize metadata from GoPro videos — including GPS paths, sensor data,
         and more.
       </p>
-      <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
+      <p class="max-w-2xl mb-6 font-light text-muted-foreground lg:mb-8 md:text-lg lg:text-xl">
         Everything happens in your browser. Your data stays local.
       </p>
       <div class="space-y-8">
@@ -121,9 +121,9 @@ watch(
         <div class="h-full overflow-y-auto space-y-6">
 
           <!-- Metadata sections -->
-          <section v-if="(store as any).showMap" class="mb-8 bg-white p-4">
+          <section v-if="(store as any).showMap" class="mb-8 bg-white/80 backdrop-blur-sm border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="font-roboto-title text-lg text-gray-900">GPS</h2>
+              <h2 class="font-roboto-title text-lg text-foreground font-semibold">GPS</h2>
               <Button variant="outline" size="sm" @click="exportGpx" :disabled="store.gpsData.length === 0"
                 class="text-sm">
                 Export GPX
@@ -131,22 +131,22 @@ watch(
             </div>
             <Map />
           </section>
-          <section class="mb-8 bg-white p-4">
-            <h2 class="font-roboto-title text-lg text-gray-900">Scene</h2>
+          <section class="mb-8 bg-white/80 backdrop-blur-sm border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+            <h2 class="font-roboto-title text-lg text-foreground font-semibold">Scene</h2>
             <SceneDisplay />
           </section>
-          <section class="mb-8 bg-white p-4">
-            <h2 class="font-roboto-title text-lg text-gray-900">Acceleration</h2>
+          <section class="mb-8 bg-white/80 backdrop-blur-sm border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+            <h2 class="font-roboto-title text-lg text-foreground font-semibold">Acceleration</h2>
             <AccelerationVisualizer />
           </section>
-          <section class="mb-8 bg-white p-4">
-            <h2 class="font-roboto-title text-lg text-gray-900">Color and Luminance</h2>
+          <section class="mb-8 bg-white/80 backdrop-blur-sm border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+            <h2 class="font-roboto-title text-lg text-foreground font-semibold">Color and Luminance</h2>
             <div class="flex flex-row justify-between gap-4">
               <HueDisplay />
               <Luminance />
             </div>
           </section>
-          <section class="mb-4 bg-white p-4">
+          <section class="mb-4 bg-white/80 backdrop-blur-sm border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
             <DebugData />
           </section>
         </div>
